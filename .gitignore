@@ -1,0 +1,16 @@
+node_modules/
+out/
+dist/
+dist-electron/
+release/
+.vite/
+coverage/
+*.log
+.env
+.env.local
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.DS_Store
+Thumbs.db
