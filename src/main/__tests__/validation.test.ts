@@ -5,6 +5,7 @@ import {
   parseHabitInput,
   parseId,
   parseReminderTime,
+  parseSettingsChanges,
   ValidationError,
 } from '../validation';
 
@@ -96,5 +97,20 @@ describe('parseId', () => {
     );
     expect(() => parseId("1' OR '1'='1")).toThrow('Invalid id');
     expect(() => parseId(42)).toThrow('Invalid id');
+  });
+});
+
+describe('parseSettingsChanges', () => {
+  it('accepts known themes and week starts, and ignores missing fields', () => {
+    expect(parseSettingsChanges({ theme: 'dark' })).toEqual({ theme: 'dark' });
+    expect(parseSettingsChanges({ weekStartsOn: 0 })).toEqual({ weekStartsOn: 0 });
+    expect(parseSettingsChanges({})).toEqual({});
+  });
+
+  it('rejects anything else', () => {
+    expect(() => parseSettingsChanges({ theme: 'purple' })).toThrow('Theme');
+    expect(() => parseSettingsChanges({ weekStartsOn: 3 })).toThrow('Week');
+    expect(() => parseSettingsChanges({ weekStartsOn: '1' })).toThrow('Week');
+    expect(() => parseSettingsChanges(null)).toThrow(ValidationError);
   });
 });

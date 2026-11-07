@@ -1,5 +1,5 @@
 import type Database from 'better-sqlite3';
-import { ipcMain } from 'electron';
+import { ipcMain, nativeTheme } from 'electron';
 import type { IpcChannel, IpcContract } from '../shared/ipc';
 import { getLogs, toggleLog } from './db/repositories/habitLogs';
 import {
@@ -10,7 +10,14 @@ import {
   restoreHabit,
   updateHabit,
 } from './db/repositories/habits';
-import { parseDayKey, parseDayRange, parseHabitInput, parseId } from './validation';
+import { getAppSettings, updateAppSettings } from './db/repositories/settings';
+import {
+  parseDayKey,
+  parseDayRange,
+  parseHabitInput,
+  parseId,
+  parseSettingsChanges,
+} from './validation';
 
 /**
  * Handlers receive their arguments as `unknown` on purpose: the type of what the renderer
@@ -36,4 +43,11 @@ export function registerIpcHandlers(db: Database.Database): void {
     toggleLog(db, parseId(habitId), parseDayKey(dayKey))
   );
   handle('habits:getLogs', (from, to) => getLogs(db, ...parseDayRange(from, to)));
+  handle('settings:get', () => getAppSettings(db));
+  handle('settings:update', (changes) => {
+    const settings = updateAppSettings(db, parseSettingsChanges(changes));
+    // themeSource drives the window frame and the renderer's prefers-color-scheme together.
+    nativeTheme.themeSource = settings.theme;
+    return settings;
+  });
 }

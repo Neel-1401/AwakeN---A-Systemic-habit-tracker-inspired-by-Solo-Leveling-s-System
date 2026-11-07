@@ -1,3 +1,4 @@
+import type { WeekStartsOn } from '../core/dates';
 import type { HabitColor } from '../core/palette';
 import type { Habit, HabitLog } from '../core/types';
 
@@ -10,6 +11,14 @@ export interface HabitInput {
   weekdays?: number[];
   /** 'HH:mm' in local time, or null for no reminder. */
   reminderTime: string | null;
+}
+
+export type ThemeSetting = 'system' | 'light' | 'dark';
+
+export interface AppSettings {
+  theme: ThemeSetting;
+  /** 1 = Monday, 0 = Sunday */
+  weekStartsOn: WeekStartsOn;
 }
 
 /**
@@ -27,6 +36,9 @@ export interface IpcContract {
   'habits:toggleLog': { args: [habitId: string, dayKey: string]; result: HabitLog };
   /** Live completions from fromDayKey to toDayKey inclusive, for habits that aren't deleted. */
   'habits:getLogs': { args: [fromDayKey: string, toDayKey: string]; result: HabitLog[] };
+  'settings:get': { args: []; result: AppSettings };
+  /** Changes only the fields given. Returns all settings after the change. */
+  'settings:update': { args: [changes: Partial<AppSettings>]; result: AppSettings };
 }
 
 export type IpcChannel = keyof IpcContract;
@@ -42,5 +54,9 @@ export interface AwakenApi {
     delete(id: string): Promise<void>;
     toggleLog(habitId: string, dayKey: string): Promise<HabitLog>;
     getLogs(fromDayKey: string, toDayKey: string): Promise<HabitLog[]>;
+  };
+  settings: {
+    get(): Promise<AppSettings>;
+    update(changes: Partial<AppSettings>): Promise<AppSettings>;
   };
 }

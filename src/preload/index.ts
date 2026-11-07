@@ -19,6 +19,10 @@ const api: AwakenApi = {
     toggleLog: (habitId, dayKey) => invoke('habits:toggleLog', habitId, dayKey),
     getLogs: (fromDayKey, toDayKey) => invoke('habits:getLogs', fromDayKey, toDayKey),
   },
+  settings: {
+    get: () => invoke('settings:get'),
+    update: (changes) => invoke('settings:update', changes),
+  },
 };
 
 contextBridge.exposeInMainWorld('api', api);

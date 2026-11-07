@@ -1,7 +1,7 @@
 import { parseDay } from '../core/dates';
 import { isHabitColor } from '../core/palette';
 import type { Habit } from '../core/types';
-import type { HabitInput } from '../shared/ipc';
+import type { AppSettings, HabitInput } from '../shared/ipc';
 
 /**
  * Anything arriving over IPC comes from the renderer, so main treats it as untrusted and checks
@@ -63,6 +63,24 @@ function parseWeekdays(value: unknown): number[] {
     throw new ValidationError('Weekdays must be whole numbers from 0 (Sunday) to 6 (Saturday)');
   }
   return [...new Set(value as number[])].sort((a, b) => a - b);
+}
+
+export function parseSettingsChanges(value: unknown): Partial<AppSettings> {
+  if (!isRecord(value)) throw new ValidationError('Settings changes are missing');
+  const changes: Partial<AppSettings> = {};
+  if (value.theme !== undefined) {
+    if (value.theme !== 'system' && value.theme !== 'light' && value.theme !== 'dark') {
+      throw new ValidationError('Theme must be system, light or dark');
+    }
+    changes.theme = value.theme;
+  }
+  if (value.weekStartsOn !== undefined) {
+    if (value.weekStartsOn !== 0 && value.weekStartsOn !== 1) {
+      throw new ValidationError('Week must start on Sunday (0) or Monday (1)');
+    }
+    changes.weekStartsOn = value.weekStartsOn;
+  }
+  return changes;
 }
 
 export function parseHabitInput(value: unknown): HabitInput {
