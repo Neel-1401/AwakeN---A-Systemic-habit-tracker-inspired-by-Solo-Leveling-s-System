@@ -23,7 +23,7 @@ Early. I'm building it in phases. The first two are done and the third is in pro
 - [ ] 3. Habits screen, in four steps:
   - [x] 3a. Database and IPC: habit colour, reminder time and start day; completing, undoing
         and backfilling days; every request checked in the main process
-  - [ ] 3b. App layout and the Today view, the New/Edit habit dialog, theme settings
+  - [x] 3b. App layout and the Today view, the New/Edit habit dialog, theme settings
   - [ ] 3c. Month and Year views
   - [ ] 3d. Habit reminders as desktop notifications
 - [ ] 4. Calendar (local only)
@@ -32,8 +32,9 @@ Early. I'm building it in phases. The first two are done and the third is in pro
 - [ ] 7. Pull changes back from Google, offline queue
 - [ ] 8. Polish and installers
 
-If you run it now you'll still get an empty window. The habit data layer works, but there's no
-screen for it until 3b.
+If you run it now you get the Habits page: add and edit habits, tick them off for today, backfill
+the last 7 days, and see current and best streaks. Settings has the theme (system, light, dark)
+and which day the week starts on. Month and Year views come next.
 
 ## Running it
 
