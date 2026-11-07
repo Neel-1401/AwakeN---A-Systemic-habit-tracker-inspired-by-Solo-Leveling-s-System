@@ -1,12 +1,13 @@
+import type { HabitColor } from './palette';
+
 export interface Habit {
   id: string;
   name: string;
   frequency: 'daily' | 'weekdays' | 'weekly';
-  weekdays?: number[]; // 0 = Sunday ... 6 = Saturday
-  // Optional until Phase 3 adds these columns and the repository fills them in.
-  color?: string;
-  reminderTime?: string | null; // HH:mm
-  startDate?: string; // YYYY-MM-DD
+  weekdays?: number[]; // 0 = Sunday ... 6 = Saturday. Only set when frequency is 'weekdays'.
+  color: HabitColor;
+  reminderTime: string | null; // HH:mm, local time
+  startDate: string; // YYYY-MM-DD, the local day the habit was created
   archivedAt?: string | null;
   createdAt: string;
   updatedAt: string;
