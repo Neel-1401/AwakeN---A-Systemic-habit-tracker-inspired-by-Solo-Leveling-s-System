@@ -1,8 +1,7 @@
 import path from 'node:path';
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { openDatabase } from './db';
-import { createHabit, listHabits } from './db/repositories/habits';
-import { IpcChannels } from '../shared/ipc';
+import { registerIpcHandlers } from './ipc';
 
 function resolveMigrationsDir(): string {
   return app.isPackaged
@@ -33,8 +32,7 @@ app.whenReady().then(() => {
   const dbPath = path.join(app.getPath('userData'), 'awaken.db');
   const db = openDatabase(dbPath, resolveMigrationsDir());
 
-  ipcMain.handle(IpcChannels.habitsCreate, (_event, input) => createHabit(db, input));
-  ipcMain.handle(IpcChannels.habitsList, () => listHabits(db));
+  registerIpcHandlers(db);
 
   createWindow();
 
