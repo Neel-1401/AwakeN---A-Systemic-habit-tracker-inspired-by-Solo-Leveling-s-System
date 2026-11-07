@@ -1,0 +1,63 @@
+/*
+ * Design tokens. Every colour, size and duration in the app comes from here.
+ * The theme setting is applied by the main process (nativeTheme.themeSource), which also
+ * decides what prefers-color-scheme reports, so this media query covers system, light and dark.
+ */
+:root {
+  color-scheme: light dark;
+
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --border: #e5e5e5;
+  --text: #1a1a1a;
+  --muted: #737373;
+  --cell: #eeeeec;
+  --hover: #f4f4f3;
+  --accent: #4f7a6b;
+  --accent-tint: #e2ebe7;
+  --danger: #a3483f;
+  --danger-tint: #f4e3e0;
+  --on-fill: #ffffff; /* text and icons on top of accent or habit colours */
+
+  --font: Inter, 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 13px;
+  --text-md: 14px;
+  --text-lg: 22px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --radius: 6px;
+  --radius-sm: 4px;
+  --sidebar-width: 208px;
+  --content-width: 940px;
+  --fade: 150ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111111;
+    --surface: #181818;
+    --border: #2a2a2a;
+    --text: #ededed;
+    --muted: #8a8a8a;
+    --cell: #242424;
+    --hover: #1f1f1f;
+    --accent-tint: #1e2c27;
+    --danger: #c46a60;
+    --danger-tint: #35221f;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --fade: 0ms linear;
+  }
+}

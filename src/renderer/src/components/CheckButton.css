@@ -1,0 +1,40 @@
+.check-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1.5px solid var(--habit, var(--accent));
+  border-radius: 50%;
+  background: transparent;
+  transition: background-color var(--fade);
+}
+
+.check-button svg {
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke: var(--on-fill);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0;
+  transition: opacity var(--fade);
+}
+
+.check-button:hover:not([aria-pressed='true']) {
+  background: var(--hover);
+}
+
+.check-button:hover:not([aria-pressed='true']) svg {
+  stroke: var(--habit, var(--accent));
+  opacity: 0.5;
+}
+
+.check-button[aria-pressed='true'] {
+  background: var(--habit, var(--accent));
+}
+
+.check-button[aria-pressed='true'] svg {
+  opacity: 1;
+}

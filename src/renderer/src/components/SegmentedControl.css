@@ -1,0 +1,64 @@
+.segmented {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.segmented__legend {
+  margin-bottom: var(--space-2);
+  padding: 0;
+  font-weight: 500;
+}
+
+.segmented__options {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+
+.segmented__option {
+  position: relative;
+}
+
+.segmented__option + .segmented__option {
+  border-left: 1px solid var(--border);
+}
+
+.segmented__option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.segmented__option span {
+  display: block;
+  padding: var(--space-1) var(--space-3);
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color var(--fade), color var(--fade);
+}
+
+.segmented__option:first-child span {
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+
+.segmented__option:last-child span {
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.segmented__option span:hover {
+  background: var(--hover);
+}
+
+/* Selected: a darker fill than hover, plus bold text, so it isn't shown by colour alone. */
+.segmented__option input:checked + span {
+  background: var(--cell);
+  color: var(--text);
+  font-weight: 600;
+}
+
+.segmented__option input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

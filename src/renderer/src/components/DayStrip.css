@@ -1,0 +1,88 @@
+/*
+ * Marks, by shape:
+ *   done        filled circle in the habit colour
+ *   missed      outlined circle with a slash
+ *   pending     outlined circle (today, not done yet)
+ *   unscheduled small grey dot
+ */
+.day-strip {
+  display: flex;
+  gap: 2px;
+}
+
+.day-strip__day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 26px;
+  padding: 2px 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  transition: background-color var(--fade);
+}
+
+.day-strip__day:hover {
+  background: var(--hover);
+}
+
+.day-strip__label {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1;
+}
+
+.day-strip__day.is-today .day-strip__label {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.day-strip__mark {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.day-strip__day--done .day-strip__mark {
+  background: var(--habit, var(--accent));
+}
+
+.day-strip__day--missed .day-strip__mark,
+.day-strip__day--pending .day-strip__mark {
+  border: 1.5px solid var(--muted);
+}
+
+.day-strip__day--missed .day-strip__mark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.5px;
+  height: 14px;
+  background: var(--muted);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.day-strip__day--pending .day-strip__mark {
+  border-color: var(--accent);
+}
+
+.day-strip__day--unscheduled .day-strip__mark::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cell);
+  transform: translate(-50%, -50%);
+}
+
+@media (prefers-color-scheme: dark) {
+  .day-strip__day--unscheduled .day-strip__mark::after {
+    background: var(--border);
+  }
+}

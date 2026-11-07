@@ -1,0 +1,54 @@
+.reminders {
+  padding: var(--space-3) var(--space-4) var(--space-4);
+}
+
+.reminders__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.reminder-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 28px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: var(--text-sm);
+}
+
+.reminder-pill__time {
+  color: var(--muted);
+}
+
+.reminder-pill__status {
+  font-weight: 500;
+}
+
+.reminder-pill--done {
+  border-color: var(--accent-tint);
+  background: var(--accent-tint);
+}
+
+.reminder-pill--done .reminder-pill__status {
+  color: var(--accent);
+}
+
+.reminder-pill--due {
+  border-color: var(--danger);
+  background: var(--danger-tint);
+}
+
+.reminder-pill--due .reminder-pill__status {
+  color: var(--danger);
+}
+
+.reminder-pill--upcoming .reminder-pill__status {
+  color: var(--muted);
+  font-weight: 400;
+}
