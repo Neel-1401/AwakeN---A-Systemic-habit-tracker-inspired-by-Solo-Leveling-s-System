@@ -30,10 +30,19 @@ function runsOnWeekday(habit: HabitSchedule, day: Date): boolean {
 }
 
 /**
- * Done ÷ (done + missed) over the given days, as a whole percentage.
- * - Today, if not done yet ("pending"), is left out, so the rate doesn't drop each morning.
+ * How one day counts towards a rate: 'done', 'missed', or null for not at all.
+ * - Today, if not done yet ("pending"), doesn't count, so rates don't drop each morning.
  * - A completion only counts on a day the habit's rule covers, so ticking a chosen-days habit on
- *   an off day can't push the rate past 100%. Backfills before the start date do count.
+ *   an off day can't push a rate past 100%. Backfills before the start date do count.
+ */
+export function scoreDay(habit: HabitSchedule, { day, status }: DayEntry): 'done' | 'missed' | null {
+  if (status === 'missed') return 'missed';
+  if (status === 'done' && runsOnWeekday(habit, parseDay(day))) return 'done';
+  return null;
+}
+
+/**
+ * Done ÷ (done + missed) over the given days, as a whole percentage (see scoreDay).
  * `percent` is null when there's nothing to measure yet.
  */
 export function completionRate(
@@ -42,9 +51,10 @@ export function completionRate(
 ): { percent: number | null; done: number; scheduled: number } {
   let done = 0;
   let missed = 0;
-  for (const { day, status } of days) {
-    if (status === 'missed') missed += 1;
-    else if (status === 'done' && runsOnWeekday(habit, parseDay(day))) done += 1;
+  for (const entry of days) {
+    const score = scoreDay(habit, entry);
+    if (score === 'done') done += 1;
+    else if (score === 'missed') missed += 1;
   }
   const scheduled = done + missed;
   return { percent: scheduled ? Math.round((done / scheduled) * 100) : null, done, scheduled };

@@ -87,6 +87,14 @@ describe('overallYearHeatmap', () => {
     expect(year.percent).toBe(29);
   });
 
+  it('counts backfills before a habit started, like the habit’s own rate does', () => {
+    const late = [{ id: 'late', frequency: 'daily', startDate: '2026-03-10' }] satisfies (HabitSchedule & { id: string })[];
+    const year = overallYearHeatmap(late, new Map([['late', done('2026-03-05')]]), 2026, TODAY);
+    expect(cell(year.days, '2026-03-05')).toMatchObject({ kind: 'level', level: 4, done: 1, scheduled: 1 });
+    expect(cell(year.days, '2026-03-06')).toEqual({ day: '2026-03-06', kind: 'unscheduled' });
+    expect(year.checkIns).toBe(1);
+  });
+
   it('maps shares to levels 0–4', () => {
     expect(shareToLevel(0, 3)).toBe(0);
     expect(shareToLevel(1, 4)).toBe(1);

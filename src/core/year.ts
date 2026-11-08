@@ -1,8 +1,8 @@
 import { addDays, eachDayOfInterval, endOfWeek, startOfWeek } from 'date-fns';
 import { toDay, type WeekStartsOn } from './dates';
-import { completedDays, isHabitScheduled, weekKey, type HabitCompletion, type HabitSchedule } from './habits';
+import { completedDays, weekKey, type HabitCompletion, type HabitSchedule } from './habits';
 import { dayStatus } from './history';
-import { completionRate, type DayEntry } from './month';
+import { completionRate, scoreDay, type DayEntry } from './month';
 import { calculateStreaks } from './streaks';
 
 export type HeatLevel = 0 | 1 | 2 | 3 | 4;
@@ -104,8 +104,9 @@ export function shareToLevel(done: number, scheduled: number): HeatLevel {
 
 /**
  * All habits together, per day: how many of that day's scheduled habits were done.
- * Weekly habits are left out because they aren't tied to a particular day. Today counts only
- * the habits already done, so it never shows as worse than it is.
+ * Each habit-day is scored exactly as in the habit's own rate (scoreDay), so backfills before a
+ * habit's start count here too, and today counts only the habits already done.
+ * Weekly habits are left out because they aren't tied to a particular day.
  */
 export function overallYearHeatmap(
   habits: readonly (HabitSchedule & { id: string })[],
@@ -123,11 +124,11 @@ export function overallYearHeatmap(
     let scheduled = 0;
     let done = 0;
     for (const habit of dayBased) {
-      if (!isHabitScheduled(habit, day)) continue;
-      const isDone = completed.get(habit.id)!.has(day);
-      if (day === today && !isDone) continue;
+      const status = dayStatus(habit, day, completed.get(habit.id)!, today);
+      const score = scoreDay(habit, { day, status });
+      if (score === null) continue;
       scheduled += 1;
-      if (isDone) done += 1;
+      if (score === 'done') done += 1;
     }
     if (scheduled === 0) return { day, kind: 'unscheduled' };
     totalDone += done;
