@@ -107,6 +107,18 @@ Notes, XP/levels/ranks, AI assistant, accounts or cloud backend, multi-user, mob
 - Never hardcode or log secrets or tokens.
 - Small, clear commits.
 
+## 11. Decisions
+- **No install scripts (`.npmrc`: `ignore-scripts=true`), decided 2026-11-08.** When npm 11
+  installs from `package-lock.json` it ignores better-sqlite3's `"gypfile": false` and runs
+  `node-gyp rebuild`, which fails on Windows without Visual Studio. Nothing needs it:
+  better-sqlite3 13 is a Node-API module with prebuilt binaries that load in both Node (Vitest)
+  and Electron (the app), and Electron 45 downloads its own binary on first use. So there's no
+  `@electron/rebuild` and Vitest runs under plain Node. `npm run check:native` loads the module
+  in both runtimes and should be run after upgrading better-sqlite3 or Electron.
+  **Phase 8 caveat:** this also blocks our own `pre*`/`post*` hooks and any dependency install
+  hooks. If `electron-builder` needs one (for example `postinstall: electron-builder
+  install-app-deps`), run it as an explicit script instead, or revisit this setting.
+
 ---
 
 ## Google setup I need to do before Phase 5 (guide me through it when we get there)
