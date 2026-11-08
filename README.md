@@ -24,7 +24,8 @@ Early. I'm building it in phases. The first two are done and the third is in pro
   - [x] 3a. Database and IPC: habit colour, reminder time and start day; completing, undoing
         and backfilling days; every request checked in the main process
   - [x] 3b. App layout and the Today view, the New/Edit habit dialog, theme settings
-  - [ ] 3c. Month and Year views
+  - [x] 3c. Month and Year views: a habit × day grid with monthly rates, and a heatmap for
+        all habits plus one per habit
   - [ ] 3d. Habit reminders as desktop notifications
 - [ ] 4. Calendar (local only)
 - [ ] 5. Google sign-in
@@ -32,9 +33,15 @@ Early. I'm building it in phases. The first two are done and the third is in pro
 - [ ] 7. Pull changes back from Google, offline queue
 - [ ] 8. Polish and installers
 
-If you run it now you get the Habits page: add and edit habits, tick them off for today, backfill
-the last 7 days, and see current and best streaks. Settings has the theme (system, light, dark)
-and which day the week starts on. Month and Year views come next.
+If you run it now you get the Habits page with three tabs:
+
+- **Today**: tick habits off, backfill the last 7 days, see current and best streaks.
+- **Month**: every habit against every day of the month; click a past day to toggle it.
+- **Year**: a heatmap for all habits together and one per habit, with % done, days done and
+  best streak.
+
+Settings has the theme (system, light, dark) and which day the week starts on. Habit reminder
+notifications come next.
 
 ## Running it
 
