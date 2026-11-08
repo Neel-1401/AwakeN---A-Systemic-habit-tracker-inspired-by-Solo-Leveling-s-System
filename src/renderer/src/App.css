@@ -37,3 +37,24 @@
 .page-header__summary {
   color: var(--muted);
 }
+
+.settings-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.settings-hint {
+  font-size: var(--text-sm);
+}
+
+.settings-test {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-1);
+  font-size: var(--text-sm);
+}

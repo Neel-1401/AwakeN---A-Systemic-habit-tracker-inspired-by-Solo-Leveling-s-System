@@ -55,7 +55,46 @@ export function SettingsPage({ settings, onChange }: SettingsPageProps) {
           options={WEEK_OPTIONS}
           onChange={(weekStartsOn) => change({ weekStartsOn })}
         />
+        <fieldset className="settings-field">
+          <legend className="segmented__legend">Reminders</legend>
+          <label className="checkbox">
+            <input
+              type="checkbox"
+              checked={settings.habitNotifications}
+              onChange={(event) => change({ habitNotifications: event.target.checked })}
+            />
+            Desktop notifications for habit reminders
+          </label>
+          <p className="muted settings-hint">
+            Shown at a habit’s reminder time if it isn’t done yet, while AwakeN is open.
+          </p>
+          {import.meta.env.DEV && <TestReminderButton />}
+        </fieldset>
       </section>
     </div>
+  );
+}
+
+/** Development builds only (import.meta.env.DEV is false in `npm run build`). */
+function TestReminderButton() {
+  const [status, setStatus] = useState('');
+  return (
+    <p className="settings-test">
+      <button
+        type="button"
+        className="button"
+        onClick={() =>
+          window.api.reminders
+            .test()
+            .then(() => setStatus('Sent. Check the corner of your screen.'))
+            .catch((caught) => setStatus(errorMessage(caught)))
+        }
+      >
+        Test reminder
+      </button>
+      <span className="muted" aria-live="polite">
+        {status || 'Dev only'}
+      </span>
+    </p>
   );
 }
