@@ -15,18 +15,19 @@ Everything is stored locally in SQLite. There's no account and no server.
 
 ## Where it's at
 
-Early. I'm building it in phases. The first two are done and the third is in progress.
+Early. I'm building it in phases. The first three are done; the calendar is next.
 
 - [x] **1. Foundation**: Electron + React + TypeScript, the SQLite schema, and IPC between the
       window and the database
 - [x] **2. Core logic**: when habits are due, streaks, repeating events
-- [ ] 3. Habits screen, in four steps:
+- [x] **3. Habits screen**, in four steps:
   - [x] 3a. Database and IPC: habit colour, reminder time and start day; completing, undoing
         and backfilling days; every request checked in the main process
   - [x] 3b. App layout and the Today view, the New/Edit habit dialog, theme settings
   - [x] 3c. Month and Year views: a habit × day grid with monthly rates, and a heatmap for
         all habits plus one per habit
-  - [ ] 3d. Habit reminders as desktop notifications
+  - [x] 3d. Habit reminders as desktop notifications, once per habit per day, while the app
+        is open
 - [ ] 4. Calendar (local only)
 - [ ] 5. Google sign-in
 - [ ] 6. Push events to Google Calendar
@@ -40,8 +41,11 @@ If you run it now you get the Habits page with three tabs:
 - **Year**: a heatmap for all habits together and one per habit, with % done, days done and
   best streak.
 
-Settings has the theme (system, light, dark) and which day the week starts on. Habit reminder
-notifications come next.
+If a habit has a reminder time and isn't done by then, a quiet desktop notification shows up
+(within the hour, once a day). Clicking it opens Today. It only works while AwakeN is running.
+
+Settings has the theme (system, light, dark), which day the week starts on, and a switch for
+reminder notifications.
 
 ## Running it
 
