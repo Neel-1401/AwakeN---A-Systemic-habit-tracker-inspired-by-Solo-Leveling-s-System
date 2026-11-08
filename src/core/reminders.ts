@@ -16,6 +16,26 @@ export interface TodayReminder {
   minutesUntil: number;
 }
 
+/** A reminder fires only within this many minutes after its time, so a late launch doesn't flood. */
+export const REMINDER_WINDOW_MINUTES = 60;
+
+export interface DueReminder {
+  /** Identifies one firing. Including the time means editing the time re-arms the reminder. */
+  key: string;
+  habitId: string;
+  /** HH:mm */
+  time: string;
+}
+
+export function reminderKey(day: string, habitId: string, time: string): string {
+  return `${day}|${habitId}|${time}`;
+}
+
+/** The keys that belong to `day`. Older ones can be thrown away. */
+export function keysForDay(keys: readonly string[], day: string): string[] {
+  return keys.filter((key) => key.startsWith(`${day}|`));
+}
+
 function minutesOfDay(time: string): number {
   const [hours, minutes] = time.split(':').map(Number);
   return hours * 60 + minutes;
@@ -50,4 +70,28 @@ export function remindersForDay(
       return [{ habitId: habit.id, time: habit.reminderTime, status, minutesUntil }];
     })
     .sort((a, b) => a.time.localeCompare(b.time) || a.habitId.localeCompare(b.habitId));
+}
+
+/**
+ * The reminders to show as notifications right now. Built on remindersForDay, so a habit fires
+ * exactly when the Today card turns it to "Due": it has a reminder time, it's due today (weekly:
+ * not done yet this week), it isn't done today, and its time has passed. On top of that, the
+ * time must have passed by less than REMINDER_WINDOW_MINUTES and the key must not have fired yet.
+ */
+export function remindersDue(
+  habits: readonly ReminderHabit[],
+  logsByHabit: ReadonlyMap<string, readonly HabitCompletion[]>,
+  now: Date,
+  firedKeys: ReadonlySet<string>,
+  weekStartsOn: WeekStartsOn = 1,
+): DueReminder[] {
+  const today = toDay(now);
+  return remindersForDay(habits, (id) => logsByHabit.get(id) ?? [], now, weekStartsOn)
+    .filter((reminder) => reminder.status === 'due' && reminder.minutesUntil > -REMINDER_WINDOW_MINUTES)
+    .map((reminder) => ({
+      key: reminderKey(today, reminder.habitId, reminder.time),
+      habitId: reminder.habitId,
+      time: reminder.time,
+    }))
+    .filter((reminder) => !firedKeys.has(reminder.key));
 }
