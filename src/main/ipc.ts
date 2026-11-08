@@ -45,9 +45,10 @@ export function registerIpcHandlers(db: Database.Database): void {
   handle('habits:getLogs', (from, to) => getLogs(db, ...parseDayRange(from, to)));
   handle('settings:get', () => getAppSettings(db));
   handle('settings:update', (changes) => {
-    const settings = updateAppSettings(db, parseSettingsChanges(changes));
+    const parsed = parseSettingsChanges(changes);
+    const settings = updateAppSettings(db, parsed);
     // themeSource drives the window frame and the renderer's prefers-color-scheme together.
-    nativeTheme.themeSource = settings.theme;
+    if (parsed.theme) nativeTheme.themeSource = settings.theme;
     return settings;
   });
 }

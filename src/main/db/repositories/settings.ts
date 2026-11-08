@@ -1,9 +1,9 @@
 import type Database from 'better-sqlite3';
 import type { AppSettings } from '../../../shared/ipc';
 
-export const DEFAULT_SETTINGS: AppSettings = { theme: 'system', weekStartsOn: 1 };
+export const DEFAULT_SETTINGS: AppSettings = { theme: 'system', weekStartsOn: 1, habitsView: 'today' };
 
-const KEYS = { theme: 'theme', weekStartsOn: 'weekStartsOn' } as const;
+const KEYS = { theme: 'theme', weekStartsOn: 'weekStartsOn', habitsView: 'habitsView' } as const;
 
 export function getSetting(db: Database.Database, key: string): string | null {
   const row = db.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
@@ -23,9 +23,14 @@ export function setSetting(db: Database.Database, key: string, value: string, no
 export function getAppSettings(db: Database.Database): AppSettings {
   const theme = getSetting(db, KEYS.theme);
   const weekStartsOn = getSetting(db, KEYS.weekStartsOn);
+  const habitsView = getSetting(db, KEYS.habitsView);
   return {
     theme: theme === 'light' || theme === 'dark' || theme === 'system' ? theme : DEFAULT_SETTINGS.theme,
     weekStartsOn: weekStartsOn === '0' ? 0 : weekStartsOn === '1' ? 1 : DEFAULT_SETTINGS.weekStartsOn,
+    habitsView:
+      habitsView === 'today' || habitsView === 'month' || habitsView === 'year'
+        ? habitsView
+        : DEFAULT_SETTINGS.habitsView,
   };
 }
 
@@ -39,6 +44,7 @@ export function updateAppSettings(
     if (changes.weekStartsOn !== undefined) {
       setSetting(db, KEYS.weekStartsOn, String(changes.weekStartsOn), now);
     }
+    if (changes.habitsView !== undefined) setSetting(db, KEYS.habitsView, changes.habitsView, now);
   })();
   return getAppSettings(db);
 }

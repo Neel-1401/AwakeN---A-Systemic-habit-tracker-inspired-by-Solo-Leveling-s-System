@@ -14,11 +14,14 @@ export interface HabitInput {
 }
 
 export type ThemeSetting = 'system' | 'light' | 'dark';
+export type HabitsView = 'today' | 'month' | 'year';
 
 export interface AppSettings {
   theme: ThemeSetting;
   /** 1 = Monday, 0 = Sunday */
   weekStartsOn: WeekStartsOn;
+  /** The Habits tab that was open last. */
+  habitsView: HabitsView;
 }
 
 /**

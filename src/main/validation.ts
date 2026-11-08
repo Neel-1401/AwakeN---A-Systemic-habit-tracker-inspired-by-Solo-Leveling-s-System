@@ -80,6 +80,12 @@ export function parseSettingsChanges(value: unknown): Partial<AppSettings> {
     }
     changes.weekStartsOn = value.weekStartsOn;
   }
+  if (value.habitsView !== undefined) {
+    if (value.habitsView !== 'today' && value.habitsView !== 'month' && value.habitsView !== 'year') {
+      throw new ValidationError('Habits view must be today, month or year');
+    }
+    changes.habitsView = value.habitsView;
+  }
   return changes;
 }
 

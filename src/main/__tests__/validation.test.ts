@@ -104,6 +104,7 @@ describe('parseSettingsChanges', () => {
   it('accepts known themes and week starts, and ignores missing fields', () => {
     expect(parseSettingsChanges({ theme: 'dark' })).toEqual({ theme: 'dark' });
     expect(parseSettingsChanges({ weekStartsOn: 0 })).toEqual({ weekStartsOn: 0 });
+    expect(parseSettingsChanges({ habitsView: 'month' })).toEqual({ habitsView: 'month' });
     expect(parseSettingsChanges({})).toEqual({});
   });
 
@@ -111,6 +112,7 @@ describe('parseSettingsChanges', () => {
     expect(() => parseSettingsChanges({ theme: 'purple' })).toThrow('Theme');
     expect(() => parseSettingsChanges({ weekStartsOn: 3 })).toThrow('Week');
     expect(() => parseSettingsChanges({ weekStartsOn: '1' })).toThrow('Week');
+    expect(() => parseSettingsChanges({ habitsView: 'week' })).toThrow('Habits view');
     expect(() => parseSettingsChanges(null)).toThrow(ValidationError);
   });
 });
