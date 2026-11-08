@@ -51,7 +51,15 @@ Other scripts:
 npm test           # vitest
 npm run typecheck  # tsc on main, renderer and core
 npm run build      # production build into out/
+npm run check:native  # confirms better-sqlite3 loads in both Node and Electron
 ```
+
+There's no rebuild step for `better-sqlite3`. It's a Node-API module and ships prebuilt
+binaries, so the same file works in plain Node (the tests) and in Electron (the app). The
+project `.npmrc` sets `ignore-scripts=true`, because otherwise npm tries to compile
+`better-sqlite3` with node-gyp on a fresh install, which needs Visual Studio on Windows. Electron
+downloads its own binary the first time it runs. If a future upgrade breaks this,
+`npm run check:native` will say which runtime failed.
 
 The database ends up in Electron's user data folder (`%APPDATA%\awaken\awaken.db` on Windows).
 
