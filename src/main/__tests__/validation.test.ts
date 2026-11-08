@@ -105,6 +105,7 @@ describe('parseSettingsChanges', () => {
     expect(parseSettingsChanges({ theme: 'dark' })).toEqual({ theme: 'dark' });
     expect(parseSettingsChanges({ weekStartsOn: 0 })).toEqual({ weekStartsOn: 0 });
     expect(parseSettingsChanges({ habitsView: 'month' })).toEqual({ habitsView: 'month' });
+    expect(parseSettingsChanges({ habitNotifications: false })).toEqual({ habitNotifications: false });
     expect(parseSettingsChanges({})).toEqual({});
   });
 
@@ -113,6 +114,7 @@ describe('parseSettingsChanges', () => {
     expect(() => parseSettingsChanges({ weekStartsOn: 3 })).toThrow('Week');
     expect(() => parseSettingsChanges({ weekStartsOn: '1' })).toThrow('Week');
     expect(() => parseSettingsChanges({ habitsView: 'week' })).toThrow('Habits view');
+    expect(() => parseSettingsChanges({ habitNotifications: 'yes' })).toThrow('on or off');
     expect(() => parseSettingsChanges(null)).toThrow(ValidationError);
   });
 });

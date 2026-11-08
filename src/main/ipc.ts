@@ -32,7 +32,16 @@ function handle<C extends IpcChannel>(channel: C, handler: Handler<C>): void {
   ipcMain.handle(channel, (_event, ...args: unknown[]) => handler(...args));
 }
 
-export function registerIpcHandlers(db: Database.Database): void {
+interface IpcOptions {
+  /** Development only: shows a sample notification for the Settings "Test reminder" button. */
+  testReminder?: () => void;
+}
+
+export function registerIpcHandlers(db: Database.Database, options: IpcOptions = {}): void {
+  if (options.testReminder) {
+    const testReminder = options.testReminder;
+    handle('reminders:test', () => testReminder());
+  }
   handle('habits:list', () => listHabits(db));
   handle('habits:create', (input) => createHabit(db, parseHabitInput(input)));
   handle('habits:update', (id, input) => updateHabit(db, parseId(id), parseHabitInput(input)));

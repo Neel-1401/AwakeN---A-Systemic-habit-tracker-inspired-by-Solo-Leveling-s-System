@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 import type { WeekStartsOn } from '../../../core/dates';
 import type { Habit } from '../../../core/types';
 
@@ -28,11 +27,7 @@ export function describeSchedule(
     .join(', ');
 }
 
-/** "18:05" → "6:05 pm" */
-export function formatTime(time: string): string {
-  const [hours, minutes] = time.split(':').map(Number);
-  return format(new Date(2000, 0, 1, hours, minutes), 'h:mm a').toLowerCase();
-}
+export { formatTime } from '../../../shared/format';
 
 /** 130 → "in 2h 10m", 45 → "in 45m", 120 → "in 2h" */
 export function formatCountdown(minutes: number): string {

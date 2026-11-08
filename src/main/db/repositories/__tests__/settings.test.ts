@@ -12,15 +12,26 @@ function createTestDb(): Database.Database {
 
 describe('settings repository', () => {
   it('starts with system theme, Monday weeks and the Today view', () => {
-    expect(getAppSettings(createTestDb())).toEqual({ theme: 'system', weekStartsOn: 1, habitsView: 'today' });
+    expect(getAppSettings(createTestDb())).toEqual({
+      theme: 'system',
+      weekStartsOn: 1,
+      habitsView: 'today',
+      habitNotifications: true,
+    });
   });
 
   it('changes only the fields given and persists them', () => {
     const db = createTestDb();
     expect(updateAppSettings(db, { theme: 'dark' })).toMatchObject({ theme: 'dark', weekStartsOn: 1 });
     expect(updateAppSettings(db, { weekStartsOn: 0 })).toMatchObject({ theme: 'dark', weekStartsOn: 0 });
-    expect(updateAppSettings(db, { habitsView: 'year' })).toEqual({ theme: 'dark', weekStartsOn: 0, habitsView: 'year' });
-    expect(getAppSettings(db)).toEqual({ theme: 'dark', weekStartsOn: 0, habitsView: 'year' });
+    expect(updateAppSettings(db, { habitsView: 'year' })).toMatchObject({ habitsView: 'year' });
+    expect(updateAppSettings(db, { habitNotifications: false })).toEqual({
+      theme: 'dark',
+      weekStartsOn: 0,
+      habitsView: 'year',
+      habitNotifications: false,
+    });
+    expect(getAppSettings(db)).toMatchObject({ habitNotifications: false });
   });
 
   it('falls back to defaults for unrecognised stored values', () => {
@@ -28,6 +39,12 @@ describe('settings repository', () => {
     setSetting(db, 'theme', 'purple');
     setSetting(db, 'weekStartsOn', '3');
     setSetting(db, 'habitsView', 'week');
-    expect(getAppSettings(db)).toEqual({ theme: 'system', weekStartsOn: 1, habitsView: 'today' });
+    setSetting(db, 'habitNotifications', 'maybe');
+    expect(getAppSettings(db)).toEqual({
+      theme: 'system',
+      weekStartsOn: 1,
+      habitsView: 'today',
+      habitNotifications: true,
+    });
   });
 });

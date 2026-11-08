@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { AppSettings } from '../../../shared/ipc';
 
-const FALLBACK: AppSettings = { theme: 'system', weekStartsOn: 1, habitsView: 'today' };
+const FALLBACK: AppSettings = { theme: 'system', weekStartsOn: 1, habitsView: 'today', habitNotifications: true };
 
 export function useSettings() {
   const [settings, setSettings] = useState<AppSettings>(FALLBACK);

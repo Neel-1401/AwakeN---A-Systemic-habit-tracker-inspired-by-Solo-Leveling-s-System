@@ -22,6 +22,8 @@ export interface AppSettings {
   weekStartsOn: WeekStartsOn;
   /** The Habits tab that was open last. */
   habitsView: HabitsView;
+  /** Show desktop notifications for habit reminders. */
+  habitNotifications: boolean;
 }
 
 /**
@@ -42,7 +44,15 @@ export interface IpcContract {
   'settings:get': { args: []; result: AppSettings };
   /** Changes only the fields given. Returns all settings after the change. */
   'settings:update': { args: [changes: Partial<AppSettings>]; result: AppSettings };
+  /** Development builds only: shows a sample reminder notification straight away. */
+  'reminders:test': { args: []; result: void };
 }
+
+/** Messages main sends to the window (the other direction from IpcContract). */
+export const MainEvents = {
+  /** A reminder notification was clicked: show the Today tab. */
+  showToday: 'app:showToday',
+} as const;
 
 export type IpcChannel = keyof IpcContract;
 
@@ -61,5 +71,13 @@ export interface AwakenApi {
   settings: {
     get(): Promise<AppSettings>;
     update(changes: Partial<AppSettings>): Promise<AppSettings>;
+  };
+  reminders: {
+    /** Development builds only. */
+    test(): Promise<void>;
+  };
+  events: {
+    /** Calls `listener` when main asks for the Today tab. Returns a function that unsubscribes. */
+    onShowToday(listener: () => void): () => void;
   };
 }

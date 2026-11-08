@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import type { AwakenApi, IpcChannel, IpcContract } from '../shared/ipc';
+import { MainEvents, type AwakenApi, type IpcChannel, type IpcContract } from '../shared/ipc';
 
 function invoke<C extends IpcChannel>(
   channel: C,
@@ -22,6 +22,17 @@ const api: AwakenApi = {
   settings: {
     get: () => invoke('settings:get'),
     update: (changes) => invoke('settings:update', changes),
+  },
+  reminders: {
+    test: () => invoke('reminders:test'),
+  },
+  events: {
+    onShowToday(listener) {
+      // Wrap the listener so the renderer never sees Electron's event object.
+      const handler = () => listener();
+      ipcRenderer.on(MainEvents.showToday, handler);
+      return () => ipcRenderer.removeListener(MainEvents.showToday, handler);
+    },
   },
 };
 

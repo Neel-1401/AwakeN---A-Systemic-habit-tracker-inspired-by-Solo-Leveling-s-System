@@ -86,6 +86,12 @@ export function parseSettingsChanges(value: unknown): Partial<AppSettings> {
     }
     changes.habitsView = value.habitsView;
   }
+  if (value.habitNotifications !== undefined) {
+    if (typeof value.habitNotifications !== 'boolean') {
+      throw new ValidationError('Habit notifications must be on or off');
+    }
+    changes.habitNotifications = value.habitNotifications;
+  }
   return changes;
 }
 
