@@ -1,0 +1,57 @@
+.year-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.year-card {
+  padding: var(--space-4);
+}
+
+.year-card__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-3);
+}
+
+.year-card__title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  font-weight: 500;
+}
+
+.year-card__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.year-card__schedule {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.year-card__stats {
+  display: flex;
+  gap: var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.year-card__stats strong {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.year-card__note {
+  margin-top: var(--space-1);
+  color: var(--muted);
+  font-size: var(--text-xs);
+}

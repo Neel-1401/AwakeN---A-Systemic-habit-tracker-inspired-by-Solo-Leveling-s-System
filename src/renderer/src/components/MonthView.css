@@ -1,0 +1,218 @@
+.legend {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend__swatch {
+  --habit: var(--accent);
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+}
+
+.month-empty {
+  padding: var(--space-4);
+  color: var(--muted);
+}
+
+/* The card scrolls sideways when the window is too narrow for 31 days. */
+.month-scroll {
+  overflow-x: auto;
+}
+
+.month-grid {
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 100%;
+}
+
+.month-grid th,
+.month-grid td {
+  padding: 2px 0;
+  text-align: center;
+  font-weight: 400;
+}
+
+.month-grid thead th {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.month-grid tbody tr:first-child > * {
+  padding-top: var(--space-2);
+}
+
+.month-grid tbody tr:last-child > * {
+  padding-bottom: var(--space-3);
+}
+
+/* The habit-name column stays put while the days scroll underneath it. */
+.month-grid__name {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  width: 140px;
+  min-width: 140px;
+  max-width: 140px;
+  padding-left: var(--space-3) !important;
+  padding-right: var(--space-3) !important;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  text-align: left !important;
+}
+
+.month-grid__habit {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: 100%;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-base);
+  text-align: left;
+}
+
+.month-grid__habit-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.month-grid__habit::before {
+  content: '';
+  flex: 0 0 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--habit);
+}
+
+.month-grid__habit:hover {
+  text-decoration: underline;
+}
+
+/* 22px cells in 23px columns: 31 days fit in the 940px column. */
+.month-grid__day {
+  width: 23px;
+  min-width: 23px;
+  color: var(--text);
+  font-size: var(--text-xs);
+  line-height: 1.2;
+}
+
+.month-grid__day.is-weekend {
+  color: var(--muted);
+}
+
+.month-grid__weekday,
+.month-grid__date {
+  display: block;
+}
+
+.month-grid__weekday {
+  color: var(--muted);
+}
+
+.month-grid__date {
+  width: 20px;
+  margin: 2px auto 0;
+  border-radius: 999px;
+  font-variant-numeric: tabular-nums;
+}
+
+.month-grid__day.is-today .month-grid__date {
+  background: var(--accent);
+  color: var(--on-fill);
+  font-weight: 600;
+}
+
+.month-grid__rate {
+  min-width: 48px;
+  padding-right: var(--space-3) !important;
+  padding-left: var(--space-2) !important;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  text-align: right !important;
+  white-space: nowrap;
+}
+
+/*
+ * Cells, by shape as well as colour:
+ *   done        filled in the habit colour
+ *   missed      filled grey, with a slash
+ *   pending     filled grey (today, not done yet)
+ *   unscheduled outline only
+ *   future      faded outline
+ */
+.month-cell {
+  position: relative;
+  display: block;
+  width: 22px;
+  height: 22px;
+  margin: 0 auto;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  transition: background-color var(--fade), opacity var(--fade);
+}
+
+.month-cell--done {
+  background: var(--habit);
+}
+
+.month-cell--missed,
+.month-cell--pending {
+  background: var(--cell);
+}
+
+.month-cell--missed::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 1.5px;
+  height: 12px;
+  border-radius: 1px;
+  background: var(--muted);
+  transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.month-cell--unscheduled {
+  border-color: var(--border);
+}
+
+.month-cell--future {
+  border-color: var(--border);
+  opacity: 0.45;
+}
+
+.month-cell[aria-disabled='true'] {
+  cursor: default;
+}
+
+.month-cell:not([aria-disabled='true']):hover {
+  opacity: 0.8;
+}
+
+.month-cell.is-today {
+  outline: 1.5px solid var(--text);
+  outline-offset: 1px;
+}
+
+.month-cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

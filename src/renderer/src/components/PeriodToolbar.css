@@ -1,0 +1,36 @@
+.period-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+
+.period-toolbar__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.period-toolbar__label {
+  min-width: 130px;
+  font-size: var(--text-md);
+  font-weight: 600;
+  text-align: center;
+}
+
+.period-toolbar__extra {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.button--icon {
+  justify-content: center;
+  width: 30px;
+  padding: 0;
+  font-size: var(--text-md);
+}

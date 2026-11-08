@@ -4,7 +4,6 @@ import type { WeekStartsOn } from '../../../core/dates';
 import { remindersForDay } from '../../../core/reminders';
 import type { Habit } from '../../../core/types';
 import type { TodayModel } from '../lib/todayModel';
-import { EmptyState } from './EmptyState';
 import { HabitRow } from './HabitRow';
 import { RemindersCard } from './RemindersCard';
 import './TodayView.css';
@@ -13,22 +12,18 @@ interface TodayViewProps {
   model: TodayModel;
   now: Date;
   weekStartsOn: WeekStartsOn;
-  isEmpty: boolean;
   onToggle(habitId: string, day: string): void;
   onEdit(habit: Habit): void;
   onRestore(id: string): void;
-  onNew(): void;
 }
 
 export function TodayView({
   model,
   now,
   weekStartsOn,
-  isEmpty,
   onToggle,
   onEdit,
   onRestore,
-  onNew,
 }: TodayViewProps) {
   const reminders = useMemo(() => {
     const active = [...model.due, ...model.notScheduled];
@@ -40,8 +35,6 @@ export function TodayView({
       weekStartsOn
     );
   }, [model, now, weekStartsOn]);
-
-  if (isEmpty) return <EmptyState onNew={onNew} />;
 
   const names = new Map([...model.due, ...model.notScheduled].map((v) => [v.habit.id, v.habit]));
 

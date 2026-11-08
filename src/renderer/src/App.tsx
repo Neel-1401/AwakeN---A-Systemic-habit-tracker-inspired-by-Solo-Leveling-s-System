@@ -15,7 +15,13 @@ export default function App() {
       <main className="app__main">
         <div className="app__content">
           {/* Wait for settings so the week doesn't briefly start on the wrong day. */}
-          {loaded && page === 'habits' && <HabitsPage weekStartsOn={settings.weekStartsOn} />}
+          {loaded && page === 'habits' && (
+            <HabitsPage
+              weekStartsOn={settings.weekStartsOn}
+              view={settings.habitsView}
+              onViewChange={(habitsView) => void update({ habitsView }).catch(() => {})}
+            />
+          )}
           {loaded && page === 'settings' && <SettingsPage settings={settings} onChange={update} />}
         </div>
       </main>
