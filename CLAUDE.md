@@ -118,6 +118,10 @@ Notes, XP/levels/ranks, AI assistant, accounts or cloud backend, multi-user, mob
   **Phase 8 caveat:** this also blocks our own `pre*`/`post*` hooks and any dependency install
   hooks. If `electron-builder` needs one (for example `postinstall: electron-builder
   install-app-deps`), run it as an explicit script instead, or revisit this setting.
+- Habit reminders use Electron desktop notifications (decided in Phase 3); calendar event
+  reminders still come from Google Calendar.
+- Tray icon and launch-at-login are deferred to Phase 8. Until then, closing the window quits
+  the app and habit reminders stop.
 
 ---
 
