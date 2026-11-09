@@ -1,6 +1,13 @@
 import type Database from 'better-sqlite3';
 import { ipcMain, nativeTheme } from 'electron';
 import type { IpcChannel, IpcContract } from '../shared/ipc';
+import {
+  createEvent,
+  deleteEvent,
+  listEventsInRange,
+  toggleTaskDone,
+  updateEvent,
+} from './db/repositories/events';
 import { getLogs, toggleLog } from './db/repositories/habitLogs';
 import {
   archiveHabit,
@@ -14,6 +21,8 @@ import { getAppSettings, updateAppSettings } from './db/repositories/settings';
 import {
   parseDayKey,
   parseDayRange,
+  parseEventInput,
+  parseEventRange,
   parseHabitInput,
   parseId,
   parseSettingsChanges,
@@ -52,6 +61,13 @@ export function registerIpcHandlers(db: Database.Database, options: IpcOptions =
     toggleLog(db, parseId(habitId), parseDayKey(dayKey))
   );
   handle('habits:getLogs', (from, to) => getLogs(db, ...parseDayRange(from, to)));
+  handle('events:listInRange', (from, to) => listEventsInRange(db, ...parseEventRange(from, to)));
+  handle('events:create', (input) => createEvent(db, parseEventInput(input)));
+  handle('events:update', (id, input) => updateEvent(db, parseId(id), parseEventInput(input)));
+  handle('events:delete', (id) => deleteEvent(db, parseId(id)));
+  handle('events:toggleTaskDone', (id, day) =>
+    toggleTaskDone(db, parseId(id), day === undefined || day === null ? undefined : parseDayKey(day))
+  );
   handle('settings:get', () => getAppSettings(db));
   handle('settings:update', (changes) => {
     const parsed = parseSettingsChanges(changes);

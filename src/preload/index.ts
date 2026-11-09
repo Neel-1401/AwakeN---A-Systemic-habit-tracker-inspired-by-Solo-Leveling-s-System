@@ -23,6 +23,17 @@ const api: AwakenApi = {
     get: () => invoke('settings:get'),
     update: (changes) => invoke('settings:update', changes),
   },
+  calendar: {
+    listInRange: (fromDayKey, toDayKey) => invoke('events:listInRange', fromDayKey, toDayKey),
+    create: (input) => invoke('events:create', input),
+    update: (id, input) => invoke('events:update', id, input),
+    delete: (id) => invoke('events:delete', id),
+    // Spread so an omitted day isn't sent as an explicit undefined argument.
+    toggleTaskDone: (id, occurrenceDay) =>
+      occurrenceDay === undefined
+        ? invoke('events:toggleTaskDone', id)
+        : invoke('events:toggleTaskDone', id, occurrenceDay),
+  },
   reminders: {
     test: () => invoke('reminders:test'),
   },

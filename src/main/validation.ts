@@ -1,7 +1,7 @@
 import { parseDay } from '../core/dates';
 import { isHabitColor } from '../core/palette';
 import type { Habit } from '../core/types';
-import type { AppSettings, HabitInput } from '../shared/ipc';
+import type { AppSettings, EventInput, HabitInput } from '../shared/ipc';
 
 /**
  * Anything arriving over IPC comes from the renderer, so main treats it as untrusted and checks
@@ -63,6 +63,88 @@ function parseWeekdays(value: unknown): number[] {
     throw new ValidationError('Weekdays must be whole numbers from 0 (Sunday) to 6 (Saturday)');
   }
   return [...new Set(value as number[])].sort((a, b) => a - b);
+}
+
+export const MAX_EVENT_TITLE_LENGTH = 200;
+export const MAX_EVENT_DESCRIPTION_LENGTH = 8000;
+/** Google allows at most 5 popup reminders, each up to 4 weeks (40320 minutes) before. */
+export const MAX_REMINDERS = 5;
+export const MAX_REMINDER_MINUTES = 40320;
+const MAX_EVENT_DAYS = 366;
+const MAX_RANGE_DAYS = 400;
+const DATE_TIME_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(:\d{2}(\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/** A calendar range of local days, at most about a year long. */
+export function parseEventRange(from: unknown, to: unknown): [string, string] {
+  const [fromDay, toDay] = parseDayRange(from, to);
+  const span = (Date.parse(`${toDay}T00:00:00Z`) - Date.parse(`${fromDay}T00:00:00Z`)) / DAY_MS;
+  if (span > MAX_RANGE_DAYS) throw new ValidationError('Date range is too long');
+  return [fromDay, toDay];
+}
+
+function parseDateTime(value: unknown, label: string): string {
+  if (typeof value !== 'string' || !DATE_TIME_PATTERN.test(value) || Number.isNaN(Date.parse(value))) {
+    throw new ValidationError(`${label} must be a date and time`);
+  }
+  // Normalise to UTC, e.g. "2026-11-09T09:00+05:30" → "2026-11-09T03:30:00.000Z".
+  return new Date(value).toISOString();
+}
+
+function parseReminderMinutes(value: unknown): number[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value)) throw new ValidationError('Reminders must be a list of minutes');
+  if (!value.every((m) => Number.isInteger(m) && m >= 0 && m <= MAX_REMINDER_MINUTES)) {
+    throw new ValidationError('Each reminder must be between 0 minutes and 4 weeks before');
+  }
+  const unique = [...new Set(value as number[])].sort((a, b) => a - b);
+  if (unique.length > MAX_REMINDERS) throw new ValidationError(`At most ${MAX_REMINDERS} reminders`);
+  return unique;
+}
+
+export function parseEventInput(value: unknown): EventInput {
+  if (!isRecord(value)) throw new ValidationError('Event details are missing');
+
+  const title = typeof value.title === 'string' ? value.title.trim() : '';
+  if (!title) throw new ValidationError('Title is required');
+  if (title.length > MAX_EVENT_TITLE_LENGTH) {
+    throw new ValidationError(`Title must be ${MAX_EVENT_TITLE_LENGTH} characters or fewer`);
+  }
+
+  let description: string | null = null;
+  if (value.description !== undefined && value.description !== null) {
+    if (typeof value.description !== 'string') throw new ValidationError('Description must be text');
+    description = value.description.trim() || null;
+    if (description && description.length > MAX_EVENT_DESCRIPTION_LENGTH) {
+      throw new ValidationError('Description is too long');
+    }
+  }
+
+  if (value.kind !== 'event' && value.kind !== 'task') throw new ValidationError('Kind must be event or task');
+  if (typeof value.allDay !== 'boolean') throw new ValidationError('All-day must be on or off');
+
+  const startAt = value.allDay ? parseDayKey(value.startAt) : parseDateTime(value.startAt, 'Start');
+  const endAt = value.allDay ? parseDayKey(value.endAt) : parseDateTime(value.endAt, 'End');
+  if (endAt <= startAt) throw new ValidationError('End must be after start');
+  const span = (Date.parse(value.allDay ? `${endAt}T00:00:00Z` : endAt) -
+    Date.parse(value.allDay ? `${startAt}T00:00:00Z` : startAt)) / DAY_MS;
+  if (span > MAX_EVENT_DAYS) throw new ValidationError('An event can last at most a year');
+
+  const repeat = value.repeat ?? null;
+  if (repeat !== null && repeat !== 'daily' && repeat !== 'weekly' && repeat !== 'weekdays') {
+    throw new ValidationError('Repeat must be none, daily, weekly or weekdays');
+  }
+
+  return {
+    title,
+    description,
+    kind: value.kind,
+    allDay: value.allDay,
+    startAt,
+    endAt,
+    repeat,
+    reminderMinutes: parseReminderMinutes(value.reminderMinutes),
+  };
 }
 
 export function parseSettingsChanges(value: unknown): Partial<AppSettings> {

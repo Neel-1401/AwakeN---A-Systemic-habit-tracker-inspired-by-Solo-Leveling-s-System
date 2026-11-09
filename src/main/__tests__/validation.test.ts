@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import {
   parseDayKey,
   parseDayRange,
+  parseEventInput,
+  parseEventRange,
   parseHabitInput,
   parseId,
   parseReminderTime,
@@ -116,5 +118,66 @@ describe('parseSettingsChanges', () => {
     expect(() => parseSettingsChanges({ habitsView: 'week' })).toThrow('Habits view');
     expect(() => parseSettingsChanges({ habitNotifications: 'yes' })).toThrow('on or off');
     expect(() => parseSettingsChanges(null)).toThrow(ValidationError);
+  });
+});
+
+describe('parseEventInput', () => {
+  const timed = {
+    title: '  Gym  ',
+    description: '',
+    kind: 'event',
+    allDay: false,
+    startAt: '2026-11-09T18:00:00+05:30',
+    endAt: '2026-11-09T19:00:00+05:30',
+    repeat: null,
+    reminderMinutes: [60, 10, 10],
+  };
+
+  it('trims, normalises times to UTC and tidies reminders', () => {
+    expect(parseEventInput(timed)).toEqual({
+      title: 'Gym',
+      description: null,
+      kind: 'event',
+      allDay: false,
+      startAt: '2026-11-09T12:30:00.000Z',
+      endAt: '2026-11-09T13:30:00.000Z',
+      repeat: null,
+      reminderMinutes: [10, 60],
+    });
+  });
+
+  it('takes day keys for all-day events, with an exclusive end', () => {
+    const allDay = parseEventInput({ ...timed, allDay: true, startAt: '2026-11-09', endAt: '2026-11-10' });
+    expect(allDay).toMatchObject({ startAt: '2026-11-09', endAt: '2026-11-10' });
+    expect(() => parseEventInput({ ...timed, allDay: true, startAt: '2026-11-09', endAt: '2026-11-09' })).toThrow(
+      'End must be after start'
+    );
+    expect(() => parseEventInput({ ...timed, allDay: true })).toThrow(ValidationError);
+  });
+
+  it('requires the end to be after the start', () => {
+    expect(() => parseEventInput({ ...timed, endAt: timed.startAt })).toThrow('End must be after start');
+    expect(() => parseEventInput({ ...timed, endAt: '2026-11-09T17:00:00+05:30' })).toThrow('End must be after start');
+  });
+
+  it('rejects bad titles, kinds, times, repeats and reminders', () => {
+    expect(() => parseEventInput({ ...timed, title: ' ' })).toThrow('Title is required');
+    expect(() => parseEventInput({ ...timed, kind: 'meeting' })).toThrow('Kind');
+    expect(() => parseEventInput({ ...timed, allDay: 'no' })).toThrow('All-day');
+    expect(() => parseEventInput({ ...timed, startAt: '2026-11-09 18:00' })).toThrow('Start must be a date and time');
+    expect(() => parseEventInput({ ...timed, endAt: '2027-12-01T00:00:00Z' })).toThrow('at most a year');
+    expect(() => parseEventInput({ ...timed, repeat: 'monthly' })).toThrow('Repeat');
+    expect(() => parseEventInput({ ...timed, reminderMinutes: [-5] })).toThrow('between 0 minutes and 4 weeks');
+    expect(() => parseEventInput({ ...timed, reminderMinutes: [40321] })).toThrow('between 0 minutes and 4 weeks');
+    expect(() => parseEventInput({ ...timed, reminderMinutes: [1, 2, 3, 4, 5, 6] })).toThrow('At most 5');
+    expect(() => parseEventInput(null)).toThrow(ValidationError);
+  });
+});
+
+describe('parseEventRange', () => {
+  it('accepts up to about a year', () => {
+    expect(parseEventRange('2026-11-01', '2026-12-13')).toEqual(['2026-11-01', '2026-12-13']);
+    expect(() => parseEventRange('2026-01-01', '2027-03-01')).toThrow('too long');
+    expect(() => parseEventRange('2026-11-02', '2026-11-01')).toThrow('after');
   });
 });
