@@ -21,6 +21,12 @@ interface HabitsPageProps {
   onViewChange(view: HabitsView): void;
 }
 
+const VIEW_TABS = [
+  { value: 'today', label: 'Today' },
+  { value: 'month', label: 'Month' },
+  { value: 'year', label: 'Year' },
+] as const satisfies readonly { value: HabitsView; label: string }[];
+
 /** null: closed. 'new': adding a habit. A Habit: editing that habit. */
 type DialogState = null | 'new' | Habit;
 
@@ -100,7 +106,7 @@ export function HabitsPage({ weekStartsOn, view, onViewChange }: HabitsPageProps
 
       {!isEmpty && (
         <div className="page-bar">
-          <Tabs value={view} onChange={onViewChange} />
+          <Tabs idPrefix="habits" label="Habit views" tabs={VIEW_TABS} value={view} onChange={onViewChange} />
           <button type="button" className="button button--primary" onClick={() => setDialog('new')}>
             New habit
           </button>
@@ -116,7 +122,11 @@ export function HabitsPage({ weekStartsOn, view, onViewChange }: HabitsPageProps
         </div>
       )}
 
-      <div id={panelId} role="tabpanel" aria-labelledby={isEmpty ? undefined : tabId(view)}>
+      <div
+        id={panelId('habits')}
+        role="tabpanel"
+        aria-labelledby={isEmpty ? undefined : tabId('habits', view)}
+      >
         {isEmpty && <EmptyState onNew={() => setDialog('new')} />}
 
         {!isEmpty && view === 'today' && todayModel && (

@@ -1,55 +1,53 @@
 import { useRef, type KeyboardEvent } from 'react';
-import type { HabitsView } from '../../../shared/ipc';
 import './Tabs.css';
 
-const TABS: { value: HabitsView; label: string }[] = [
-  { value: 'today', label: 'Today' },
-  { value: 'month', label: 'Month' },
-  { value: 'year', label: 'Year' },
-];
+/** The id of one tab and of the panel the tabs control, for aria-labelledby / aria-controls. */
+export const tabId = (prefix: string, value: string) => `${prefix}-tab-${value}`;
+export const panelId = (prefix: string) => `${prefix}-panel`;
 
-export const tabId = (view: HabitsView) => `habits-tab-${view}`;
-export const panelId = 'habits-panel';
-
-interface TabsProps {
-  value: HabitsView;
-  onChange(view: HabitsView): void;
+interface TabsProps<T extends string> {
+  /** Makes the ids unique when more than one tab list exists, e.g. "habits" or "calendar". */
+  idPrefix: string;
+  label: string;
+  tabs: readonly { value: T; label: string }[];
+  value: T;
+  onChange(value: T): void;
 }
 
 /**
  * Follows the standard tabs pattern: Tab moves into the tab list once, then Left/Right (and
  * Home/End) move between tabs and switch to them.
  */
-export function Tabs({ value, onChange }: TabsProps) {
+export function Tabs<T extends string>({ idPrefix, label, tabs, value, onChange }: TabsProps<T>) {
   const listRef = useRef<HTMLDivElement>(null);
 
   function onKeyDown(event: KeyboardEvent) {
-    const index = TABS.findIndex((tab) => tab.value === value);
+    const index = tabs.findIndex((tab) => tab.value === value);
     const next =
-      event.key === 'ArrowRight' ? (index + 1) % TABS.length
-      : event.key === 'ArrowLeft' ? (index - 1 + TABS.length) % TABS.length
+      event.key === 'ArrowRight' ? (index + 1) % tabs.length
+      : event.key === 'ArrowLeft' ? (index - 1 + tabs.length) % tabs.length
       : event.key === 'Home' ? 0
-      : event.key === 'End' ? TABS.length - 1
+      : event.key === 'End' ? tabs.length - 1
       : null;
     if (next === null) return;
     event.preventDefault();
-    onChange(TABS[next].value);
+    onChange(tabs[next].value);
     listRef.current?.querySelectorAll<HTMLElement>('[role="tab"]')[next]?.focus();
   }
 
   return (
-    <div ref={listRef} className="tabs" role="tablist" aria-label="Habit views" onKeyDown={onKeyDown}>
-      {TABS.map((tab) => {
+    <div ref={listRef} className="tabs" role="tablist" aria-label={label} onKeyDown={onKeyDown}>
+      {tabs.map((tab) => {
         const selected = tab.value === value;
         return (
           <button
             key={tab.value}
-            id={tabId(tab.value)}
+            id={tabId(idPrefix, tab.value)}
             type="button"
             role="tab"
             className="tabs__tab"
             aria-selected={selected}
-            aria-controls={panelId}
+            aria-controls={panelId(idPrefix)}
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tab.value)}
           >
