@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, type CSSProperties, type MouseEvent } from 
 import { layoutDay } from '../../../core/calendar';
 import { parseDay } from '../../../core/dates';
 import type { EventOccurrenceDto } from '../../../shared/ipc';
-import { formatTime } from '../lib/format';
+import { clockTime, occurrenceKey as keyOf, occurrenceLabel as itemLabel, TaskCheck } from './CalendarItem';
 import './TimeGrid.css';
 
 /** Height of one hour in pixels. Half-hour clicks snap to HOUR_PX / 2. */
@@ -22,34 +22,6 @@ interface TimeGridProps {
   onCreateAllDay(day: string): void;
   onOpen(occurrence: EventOccurrenceDto): void;
   onToggleTask(occurrence: EventOccurrenceDto): void;
-}
-
-const keyOf = (o: EventOccurrenceDto) => `${o.event.id}|${o.startAt}`;
-const clock = (iso: string) => formatTime(format(parseISO(iso), 'HH:mm'));
-
-function itemLabel(o: EventOccurrenceDto): string {
-  const parts = [o.event.title];
-  if (o.event.kind === 'task') parts.push(o.done ? 'task, done' : 'task');
-  parts.push(o.event.allDay ? 'all day' : `${clock(o.startAt)} to ${clock(o.endAt)}`);
-  if (o.event.recurrenceRule) parts.push('repeats');
-  return parts.join(', ');
-}
-
-/** The round tick box on a task. A separate button, so it never opens the dialog. */
-function TaskCheck({ occurrence, onToggle }: { occurrence: EventOccurrenceDto; onToggle(): void }) {
-  return (
-    <button
-      type="button"
-      className="cal-check"
-      aria-pressed={occurrence.done}
-      aria-label={`${occurrence.event.title}: ${occurrence.done ? 'done, press to undo' : 'mark done'}`}
-      onClick={onToggle}
-    >
-      <svg viewBox="0 0 16 16" aria-hidden="true">
-        <path d="M4 8.5l2.5 2.5L12 5.5" />
-      </svg>
-    </button>
-  );
 }
 
 /**
@@ -197,7 +169,7 @@ export function TimeGrid({
                     {o.event.kind === 'task' && <TaskCheck occurrence={o} onToggle={() => onToggleTask(o)} />}
                     <button type="button" className="cal-open" aria-label={itemLabel(o)} onClick={() => onOpen(o)}>
                       <span className="cal-item__title">{o.event.title}</span>
-                      <span className="cal-item__time">{clock(o.startAt)}</span>
+                      <span className="cal-item__time">{clockTime(o.startAt)}</span>
                     </button>
                   </div>
                 );

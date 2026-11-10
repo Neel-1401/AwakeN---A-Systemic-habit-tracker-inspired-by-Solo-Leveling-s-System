@@ -1,0 +1,38 @@
+/* Task tick box: outlined circle, filled with the accent when done. */
+.cal-check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  padding: 0;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.cal-check svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: var(--on-fill);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  visibility: hidden;
+}
+
+.cal-check[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.cal-check[aria-pressed='true'] svg {
+  visibility: visible;
+}
+
+.cal-chip .cal-check,
+.cal-month__item .cal-check {
+  margin-top: 0;
+}
