@@ -1,6 +1,6 @@
 import './Sidebar.css';
 
-export type Page = 'habits' | 'settings';
+export type Page = 'habits' | 'calendar' | 'settings';
 
 interface SidebarProps {
   page: Page;
@@ -26,8 +26,13 @@ export function Sidebar({ page, onNavigate }: SidebarProps) {
           </button>
         </li>
         <li>
-          <button type="button" className="sidebar__item" disabled>
-            Calendar <span className="sidebar__tag">later</span>
+          <button
+            type="button"
+            className="sidebar__item"
+            aria-current={page === 'calendar' ? 'page' : undefined}
+            onClick={() => onNavigate('calendar')}
+          >
+            Calendar
           </button>
         </li>
       </ul>

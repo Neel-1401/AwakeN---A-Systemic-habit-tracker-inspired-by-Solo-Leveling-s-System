@@ -1,0 +1,62 @@
+/* The event dialog reuses the habit dialog's layout classes; these are its extras. */
+.event-dialog {
+  width: min(480px, calc(100vw - 32px));
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+}
+
+.event-dialog__when {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.event-dialog__when-label {
+  width: 48px;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.event-dialog__description {
+  height: auto;
+  padding: var(--space-2) 10px;
+  resize: vertical;
+  font: inherit;
+}
+
+select.input {
+  width: 100%;
+}
+
+.toggle-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.toggle-chip {
+  height: 28px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: var(--text-sm);
+  transition: background-color var(--fade), color var(--fade);
+}
+
+.toggle-chip:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.toggle-chip:disabled {
+  opacity: 0.45;
+}
+
+.toggle-chip[aria-pressed='true'] {
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 500;
+}

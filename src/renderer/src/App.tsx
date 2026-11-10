@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { CalendarPage } from './components/CalendarPage';
 import { HabitsPage } from './components/HabitsPage';
 import { SettingsPage } from './components/SettingsPage';
 import { Sidebar, type Page } from './components/Sidebar';
@@ -34,6 +35,7 @@ export default function App() {
               onViewChange={(habitsView) => void update({ habitsView }).catch(() => {})}
             />
           )}
+          {loaded && page === 'calendar' && <CalendarPage weekStartsOn={settings.weekStartsOn} />}
           {loaded && page === 'settings' && <SettingsPage settings={settings} onChange={update} />}
         </div>
       </main>

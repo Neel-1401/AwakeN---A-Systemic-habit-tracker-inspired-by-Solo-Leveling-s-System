@@ -1,0 +1,271 @@
+/*
+ * Week/Day grid. Items are neutral grey blocks; the accent is used only for today, the now line
+ * and finished tasks. Tasks are told apart by their tick box (shape), done ones are struck through.
+ */
+.time-grid {
+  overflow: hidden;
+}
+
+.time-grid__head,
+.time-grid__all-day,
+.time-grid__body {
+  display: grid;
+}
+
+.time-grid__head {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Reserve the scrollbar's width in the fixed rows too, so their columns line up with the body. */
+.time-grid__head,
+.time-grid__all-day,
+.time-grid__scroll {
+  overflow-y: hidden;
+  scrollbar-gutter: stable;
+}
+
+.time-grid__day-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+button.time-grid__day-head:hover .time-grid__date {
+  background: var(--hover);
+}
+
+.time-grid__date {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: 999px;
+  color: var(--text);
+  font-size: var(--text-md);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--fade);
+}
+
+.time-grid__day-head.is-today .time-grid__weekday {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.time-grid__day-head.is-today .time-grid__date,
+button.time-grid__day-head.is-today:hover .time-grid__date {
+  background: var(--accent);
+  color: var(--on-fill);
+}
+
+/* All-day row */
+.time-grid__all-day {
+  border-bottom: 1px solid var(--border);
+}
+
+.time-grid__gutter-label {
+  padding: 6px var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  text-align: right;
+}
+
+.time-grid__all-day-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 30px;
+  padding: 3px 2px;
+  border-left: 1px solid var(--border);
+  cursor: copy;
+}
+
+.cal-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--cell);
+  cursor: default;
+}
+
+/* Scrolling hours */
+.time-grid__scroll {
+  /* Fits under the header, toolbar and all-day row, so only the hours scroll, not the page. */
+  max-height: calc(100vh - 400px);
+  min-height: 240px;
+  overflow-y: auto;
+}
+
+.time-grid__body {
+  position: relative;
+}
+
+.time-grid__hours {
+  position: relative;
+}
+
+.time-grid__hours span {
+  position: absolute;
+  right: var(--space-2);
+  color: var(--muted);
+  font-size: var(--text-xs);
+  transform: translateY(-50%);
+}
+
+/* One faint line per hour, drawn as a repeating background so there are no extra elements. */
+.time-grid__column {
+  position: relative;
+  border-left: 1px solid var(--border);
+  background-image: linear-gradient(to bottom, var(--border) 1px, transparent 1px);
+  background-size: 100% var(--hour);
+  cursor: copy;
+}
+
+.time-grid__column.is-today {
+  background-color: color-mix(in srgb, var(--accent-tint) 35%, transparent);
+}
+
+.time-grid__now {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  height: 0;
+  border-top: 1.5px solid var(--accent);
+  pointer-events: none;
+}
+
+.time-grid__now::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+/* Items */
+.cal-item {
+  position: absolute;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  overflow: hidden;
+  padding: 3px 6px;
+  border: 1px solid var(--surface);
+  border-left: 3px solid var(--muted);
+  border-radius: var(--radius-sm);
+  background: var(--cell);
+  cursor: default;
+}
+
+.cal-item.is-short {
+  align-items: center;
+  padding-block: 0;
+}
+
+.cal-open {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-sm);
+  line-height: 1.3;
+  text-align: left;
+}
+
+.cal-chip .cal-open {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-item.is-short .cal-open {
+  flex-direction: row;
+  gap: 6px;
+}
+
+.cal-item__title {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-item__time {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  white-space: nowrap;
+}
+
+.cal-open:hover .cal-item__title,
+.cal-chip .cal-open:hover {
+  text-decoration: underline;
+}
+
+.cal-item--task {
+  border-left-color: var(--border);
+}
+
+.is-done .cal-item__title,
+.cal-chip.is-done .cal-open {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+/* Task tick box: outlined circle, filled with the accent when done. */
+.cal-check {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 15px;
+  height: 15px;
+  margin-top: 1px;
+  padding: 0;
+  border: 1.5px solid var(--muted);
+  border-radius: 50%;
+  background: transparent;
+}
+
+.cal-check svg {
+  width: 11px;
+  height: 11px;
+  fill: none;
+  stroke: var(--on-fill);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  visibility: hidden;
+}
+
+.cal-check[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.cal-check[aria-pressed='true'] svg {
+  visibility: visible;
+}
+
+.cal-chip .cal-check {
+  margin-top: 0;
+}
