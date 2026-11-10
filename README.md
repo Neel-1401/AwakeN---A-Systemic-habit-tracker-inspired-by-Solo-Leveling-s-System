@@ -15,7 +15,7 @@ Everything is stored locally in SQLite. There's no account and no server.
 
 ## Where it's at
 
-Early. I'm building it in phases. The first three are done and the calendar is in progress.
+Early. I'm building it in phases. The first four are done; Google Calendar sync is next.
 
 - [x] **1. Foundation**: Electron + React + TypeScript, the SQLite schema, and IPC between the
       window and the database
@@ -28,11 +28,11 @@ Early. I'm building it in phases. The first three are done and the calendar is i
         all habits plus one per habit
   - [x] 3d. Habit reminders as desktop notifications, once per habit per day, while the app
         is open
-- [ ] **4. Calendar (local only)**, in three steps:
+- [x] **4. Calendar (local only)**, in three steps:
   - [x] 4a. Database and IPC for events and tasks, repeats stored as Google-style RRULE text,
         per-day ticks for repeating tasks
   - [x] 4b. Week and Day views and the event dialog
-  - [ ] 4c. Month view, keyboard shortcuts, sample data for development, empty state
+  - [x] 4c. Month view, keyboard shortcuts, sample data for development, empty state
 - [ ] 5. Google sign-in
 - [ ] 6. Push events to Google Calendar
 - [ ] 7. Pull changes back from Google, offline queue
@@ -45,11 +45,15 @@ If you run it now, the Habits page has three tabs:
 - **Year**: a heatmap for all habits together and one per habit, with % done, days done and
   best streak.
 
-The **Calendar** page has Week and Day views. Click an empty slot (or the all-day row) to add
-an event there, click an item to edit or delete it. Tasks get a tick box. Repeats can be every
+The **Calendar** page has Day, Week and Month views. Click an empty slot (or the all-day row) to
+add an event there, click an item to edit or delete it. In Month, click a date (or use the arrow
+keys and Enter) to open that day. Tasks get a tick box. Repeats can be every
 day, every week or every weekday; a repeat set somewhere else (say, monthly in Google Calendar)
 is kept as it is when you edit the event. Reminders are saved with each event but nothing sends
 them until Google Calendar is connected in Phase 5.
+
+Keyboard shortcuts on the Calendar page: `T` today, `J`/`K` (or ←/→) next and previous, `D` `W`
+`M` to switch views, `N` for a new event. They're ignored while you're typing or a dialog is open.
 
 If a habit has a reminder time and isn't done by then, a quiet desktop notification shows up
 (within the hour, once a day). Clicking it opens Today. It only works while AwakeN is running.
@@ -65,6 +69,10 @@ You need Node 20 or newer (I'm on 24).
 npm install
 npm run dev
 ```
+
+In development, Settings has an **Add sample data** button. It fills an *empty* database with
+four habits (about four months of ticks) and a week of events and tasks, and refuses if any
+habit or event already exists. It isn't in packaged builds.
 
 Other scripts:
 
