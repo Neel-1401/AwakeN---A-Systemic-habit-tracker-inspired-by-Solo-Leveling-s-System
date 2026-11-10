@@ -5,12 +5,12 @@ interface EmptyStateProps {
 export function EmptyState({ onNew }: EmptyStateProps) {
   return (
     <div className="card fade-in" style={{ padding: 'var(--space-7) var(--space-5)', textAlign: 'center' }}>
-      <h2 style={{ fontSize: 'var(--text-md)', fontWeight: 500 }}>No habits yet</h2>
-      <p className="muted" style={{ margin: 'var(--space-2) 0 var(--space-4)' }}>
-        Start with one small thing you want to do most days.
+      <h2 style={{ fontSize: '16px', fontWeight: 600 }}>No habits yet</h2>
+      <p className="muted" style={{ maxWidth: '40ch', margin: '10px auto' }}>
+        Add something small you want to do regularly, like reading, coding or a gym session.
       </p>
       <button type="button" className="button button--primary" onClick={onNew}>
-        New habit
+        Add your first habit
       </button>
     </div>
   );

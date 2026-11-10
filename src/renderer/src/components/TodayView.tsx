@@ -1,5 +1,5 @@
 import { format, parseISO } from 'date-fns';
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import type { WeekStartsOn } from '../../../core/dates';
 import { remindersForDay } from '../../../core/reminders';
 import type { Habit } from '../../../core/types';
@@ -43,9 +43,12 @@ export function TodayView({
       {reminders.length > 0 && <RemindersCard reminders={reminders} habits={names} />}
 
       <section aria-labelledby="due-title">
-        <h2 id="due-title" className="section-title">
-          Due today
-        </h2>
+        <div className="section-head">
+          <h2 id="due-title" className="section-title">
+            Due today
+          </h2>
+          <span className="note">Click a day in the strip to fill in a missed one</span>
+        </div>
         {model.due.length > 0 ? (
           <ul className="today__list card">
             {model.due.map((view) => (
@@ -62,7 +65,7 @@ export function TodayView({
         ) : (
           <p className="today__none card">
             {model.notScheduled.length > 0
-              ? 'Nothing is due today.'
+              ? 'Nothing is scheduled for today.'
               : 'No active habits. Restore one below, or add a new one.'}
           </p>
         )}
@@ -95,12 +98,17 @@ export function TodayView({
           <summary className="section-title">Archived ({model.archived.length})</summary>
           <ul className="today__list card">
             {model.archived.map((habit) => (
-              <li key={habit.id} className="archived-row">
-                <span>{habit.name}</span>
-                <span className="muted">
+              <li
+                key={habit.id}
+                className="archived-row"
+                style={{ '--habit': habit.color } as CSSProperties}
+              >
+                <span className="dot" aria-hidden="true" />
+                <span className="archived-row__name">{habit.name}</span>
+                <span className="note">
                   Archived {format(parseISO(habit.archivedAt!), 'd MMM yyyy')}
                 </span>
-                <button type="button" className="button" onClick={() => onRestore(habit.id)}>
+                <button type="button" className="button button--quiet" onClick={() => onRestore(habit.id)}>
                   Restore
                 </button>
               </li>

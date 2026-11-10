@@ -1,6 +1,7 @@
 .legend {
   display: flex;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: 14px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -12,11 +13,21 @@
   gap: 6px;
 }
 
-.legend__swatch {
-  --habit: var(--accent);
+/* Each habit has its own colour, so "done" in the key is neutral. */
+.legend .legend__swatch {
+  --habit: var(--muted);
   display: inline-block;
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.legend .legend__swatch.month-cell--missed::after {
+  height: 8px;
+}
+
+.month-note {
+  margin-top: var(--space-4);
 }
 
 .month-empty {
@@ -33,23 +44,25 @@
   border-collapse: separate;
   border-spacing: 0;
   min-width: 100%;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 .month-grid th,
 .month-grid td {
-  padding: 2px 0;
+  padding: 3px 0;
   text-align: center;
   font-weight: 400;
 }
 
 .month-grid thead th {
   padding-top: var(--space-3);
-  padding-bottom: var(--space-2);
-  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  vertical-align: bottom;
 }
 
 .month-grid tbody tr:first-child > * {
-  padding-top: var(--space-2);
+  padding-top: 10px;
 }
 
 .month-grid tbody tr:last-child > * {
@@ -61,12 +74,10 @@
   position: sticky;
   left: 0;
   z-index: 1;
-  width: 140px;
   min-width: 140px;
-  max-width: 140px;
-  padding-left: var(--space-3) !important;
+  max-width: 190px;
+  padding-left: 14px !important;
   padding-right: var(--space-3) !important;
-  border-right: 1px solid var(--border);
   background: var(--surface);
   text-align: left !important;
 }
@@ -81,6 +92,7 @@
   border: 0;
   background: none;
   font-size: var(--text-base);
+  font-weight: 500;
   text-align: left;
 }
 
@@ -92,8 +104,8 @@
 
 .month-grid__habit::before {
   content: '';
-  flex: 0 0 8px;
-  height: 8px;
+  flex: 0 0 9px;
+  height: 9px;
   border-radius: 50%;
   background: var(--habit);
 }
@@ -106,13 +118,11 @@
 .month-grid__day {
   width: 23px;
   min-width: 23px;
-  color: var(--text);
-  font-size: var(--text-xs);
-  line-height: 1.2;
+  line-height: 1.5;
 }
 
 .month-grid__day.is-weekend {
-  color: var(--muted);
+  color: color-mix(in srgb, var(--muted) 60%, transparent);
 }
 
 .month-grid__weekday,
@@ -120,15 +130,11 @@
   display: block;
 }
 
-.month-grid__weekday {
-  color: var(--muted);
-}
-
 .month-grid__date {
-  width: 20px;
-  margin: 2px auto 0;
-  border-radius: 999px;
-  font-variant-numeric: tabular-nums;
+  width: 22px;
+  margin: 0 auto;
+  padding: 1px 0;
+  border-radius: 5px;
 }
 
 .month-grid__day.is-today .month-grid__date {
@@ -139,7 +145,7 @@
 
 .month-grid__rate {
   min-width: 48px;
-  padding-right: var(--space-3) !important;
+  padding-right: 14px !important;
   padding-left: var(--space-2) !important;
   color: var(--muted);
   font-size: var(--text-sm);
@@ -163,8 +169,8 @@
   height: 22px;
   margin: 0 auto;
   padding: 0;
-  border: 1px solid transparent;
-  border-radius: 6px;
+  border: 0;
+  border-radius: 5px;
   background: transparent;
   transition: background-color var(--fade), opacity var(--fade);
 }
@@ -191,25 +197,25 @@
 }
 
 .month-cell--unscheduled {
-  border-color: var(--border);
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
 .month-cell--future {
-  border-color: var(--border);
-  opacity: 0.45;
+  background: var(--cell);
+  opacity: 0.4;
 }
 
 .month-cell[aria-disabled='true'] {
   cursor: default;
 }
 
-.month-cell:not([aria-disabled='true']):hover {
-  opacity: 0.8;
+.month-cell--missed:not([aria-disabled='true']):hover,
+.month-cell--pending:not([aria-disabled='true']):hover {
+  background: color-mix(in srgb, var(--habit) 35%, var(--cell));
 }
 
 .month-cell.is-today {
-  outline: 1.5px solid var(--text);
-  outline-offset: 1px;
+  box-shadow: inset 0 0 0 1.5px var(--text);
 }
 
 .month-cell:focus-visible {

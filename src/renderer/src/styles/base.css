@@ -82,9 +82,9 @@ button:disabled {
 }
 
 .button--primary {
-  border-color: var(--accent);
-  background: var(--accent);
-  color: var(--on-fill);
+  border-color: var(--text);
+  background: var(--text);
+  color: var(--bg);
 }
 
 .button--primary:hover:not(:disabled),
@@ -94,7 +94,7 @@ button:disabled {
 
 .button--primary:disabled {
   opacity: 0.5;
-  color: var(--on-fill);
+  color: var(--bg);
 }
 
 .button--danger {
@@ -110,6 +110,7 @@ button:disabled {
 }
 
 .button--quiet:hover:not(:disabled) {
+  background: var(--hover);
   color: var(--text);
 }
 
@@ -120,19 +121,43 @@ button:disabled {
 /* Cards and sections */
 .card {
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   background: var(--surface);
 }
 
 .section-title {
-  margin-bottom: var(--space-2);
+  margin: var(--space-1) 2px var(--space-2);
   color: var(--muted);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* A section title with a hint on the right, e.g. "Due today ... Click a day to fill it in". */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+
+.note {
+  color: var(--muted);
+  font-size: var(--text-sm);
 }
 
 .muted {
   color: var(--muted);
+}
+
+/* A habit's colour dot. Set --habit on a parent. */
+.dot {
+  flex: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--habit, var(--accent));
 }
 
 .error-banner {
@@ -142,7 +167,7 @@ button:disabled {
   gap: var(--space-3);
   padding: var(--space-2) var(--space-3);
   border: 1px solid var(--danger);
-  border-radius: var(--radius);
+  border-radius: var(--radius-card);
   margin-bottom: var(--space-4);
   background: var(--danger-tint);
   color: var(--text);

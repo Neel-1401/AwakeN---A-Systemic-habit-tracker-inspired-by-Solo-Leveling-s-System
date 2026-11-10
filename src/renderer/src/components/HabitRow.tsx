@@ -21,7 +21,8 @@ export function HabitRow({ view, now, weekStartsOn, muted, onToggle, onEdit }: H
   const { habit, completed, streaks, doneToday } = view;
   const today = toDay(now);
   let schedule = describeSchedule(habit, weekStartsOn);
-  if (muted && habit.frequency === 'weekly') schedule += ' · done this week';
+  if (habit.frequency === 'weekly') schedule += muted || doneToday ? ' · done this week' : ' · not done this week';
+  const unit = habit.frequency === 'weekly' ? 'weeks' : 'days';
   if (habit.reminderTime) schedule += ` · ${formatTime(habit.reminderTime)}`;
 
   // A CSS custom property set inline: everything inside the row can use var(--habit).
@@ -54,11 +55,11 @@ export function HabitRow({ view, now, weekStartsOn, muted, onToggle, onEdit }: H
 
       <dl className="habit-row__streaks">
         <div>
-          <dt>Current</dt>
+          <dt>current</dt>
           <dd>{streaks.current}</dd>
         </div>
         <div>
-          <dt>Best</dt>
+          <dt>best {unit}</dt>
           <dd>{streaks.best}</dd>
         </div>
       </dl>

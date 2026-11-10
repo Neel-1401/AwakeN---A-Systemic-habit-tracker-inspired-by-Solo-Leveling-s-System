@@ -16,26 +16,41 @@
 }
 
 .page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: var(--space-4);
   margin-bottom: var(--space-5);
 }
 
 .page-header__date {
   color: var(--muted);
   font-size: var(--text-sm);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .page-header__title {
+  margin-top: 2px;
   font-size: var(--text-lg);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
 
 .page-header__summary {
+  margin-top: 2px;
   color: var(--muted);
+}
+
+/* The tabs on the left and "New habit" on the right, sharing one bottom border. */
+.page-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--border);
+}
+
+.page-bar > .button {
+  margin-bottom: var(--space-2);
 }
 
 .settings-field {

@@ -30,7 +30,7 @@ export function PeriodToolbar({ label, unit, onPrevious, onNext, resetLabel, onR
           ›
         </button>
         {onReset && (
-          <button type="button" className="button" onClick={onReset}>
+          <button type="button" className="button button--quiet" onClick={onReset}>
             {resetLabel}
           </button>
         )}

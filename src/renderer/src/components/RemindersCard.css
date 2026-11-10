@@ -1,5 +1,8 @@
 .reminders {
-  padding: var(--space-3) var(--space-4) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px var(--space-4);
 }
 
 .reminders__list {
@@ -15,40 +18,37 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  height: 28px;
-  padding: 0 var(--space-3);
+  padding: 4px var(--space-3) 4px var(--space-2);
   border: 1px solid var(--border);
   border-radius: 999px;
-  font-size: var(--text-sm);
 }
 
 .reminder-pill__time {
   color: var(--muted);
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
 }
 
 .reminder-pill__status {
-  font-weight: 500;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--cell);
+  color: var(--muted);
+  font-size: var(--text-xs);
 }
 
-.reminder-pill--done {
-  border-color: var(--accent-tint);
-  background: var(--accent-tint);
+/* Done is also shown by the struck-through name, not only by the chip colour. */
+.reminder-pill--done .reminder-pill__name {
+  color: var(--muted);
+  text-decoration: line-through;
 }
 
 .reminder-pill--done .reminder-pill__status {
+  background: var(--accent-tint);
   color: var(--accent);
 }
 
-.reminder-pill--due {
-  border-color: var(--danger);
-  background: var(--danger-tint);
-}
-
 .reminder-pill--due .reminder-pill__status {
+  background: var(--danger-tint);
   color: var(--danger);
-}
-
-.reminder-pill--upcoming .reminder-pill__status {
-  color: var(--muted);
-  font-weight: 400;
 }

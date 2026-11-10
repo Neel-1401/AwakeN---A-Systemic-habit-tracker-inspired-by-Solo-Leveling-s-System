@@ -44,7 +44,7 @@ export function MonthGrid({ rows, today, onToggle, onEdit }: MonthGridProps) {
         <thead>
           <tr>
             <th scope="col" className="month-grid__name">
-              <span className="visually-hidden">Habit</span>
+              <span className="note">Habit</span>
             </th>
             {days.map((day) => {
               const date = parseDay(day);
@@ -62,7 +62,7 @@ export function MonthGrid({ rows, today, onToggle, onEdit }: MonthGridProps) {
               );
             })}
             <th scope="col" className="month-grid__rate">
-              Rate
+              <span className="note">Rate</span>
             </th>
           </tr>
         </thead>

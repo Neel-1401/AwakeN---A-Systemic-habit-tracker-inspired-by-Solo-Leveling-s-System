@@ -1,13 +1,11 @@
 .tabs {
   display: flex;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-  border-bottom: 1px solid var(--border);
+  gap: var(--space-1);
 }
 
 .tabs__tab {
   margin-bottom: -1px;
-  padding: var(--space-2) 0;
+  padding: var(--space-2) 10px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: transparent;

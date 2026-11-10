@@ -2,6 +2,8 @@ import './SegmentedControl.css';
 
 interface SegmentedControlProps<T extends string | number> {
   legend: string;
+  /** Stretch the options across the full width. */
+  fill?: boolean;
   name: string;
   value: T;
   options: readonly { value: T; label: string }[];
@@ -14,13 +16,14 @@ interface SegmentedControlProps<T extends string | number> {
  */
 export function SegmentedControl<T extends string | number>({
   legend,
+  fill,
   name,
   value,
   options,
   onChange,
 }: SegmentedControlProps<T>) {
   return (
-    <fieldset className="segmented">
+    <fieldset className={`segmented${fill ? ' segmented--fill' : ''}`}>
       <legend className="segmented__legend">{legend}</legend>
       <div className="segmented__options">
         {options.map((option) => (

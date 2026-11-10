@@ -44,7 +44,9 @@ export function DayStrip({ habit, completed, today, weekStartsOn, onToggle }: Da
             <span className="day-strip__label" aria-hidden="true">
               {format(date, 'EEEEE')}
             </span>
-            <span className="day-strip__mark" aria-hidden="true" />
+            <span className="day-strip__date" aria-hidden="true">
+              {format(date, 'd')}
+            </span>
           </button>
         );
       })}

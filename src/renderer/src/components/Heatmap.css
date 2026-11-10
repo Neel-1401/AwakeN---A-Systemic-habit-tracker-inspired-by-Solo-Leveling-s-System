@@ -27,10 +27,11 @@
 
 .heatmap__months {
   grid-area: months;
+  height: 12px;
   margin-bottom: 4px;
   color: var(--muted);
-  font-size: var(--text-xs);
-  line-height: 1;
+  font-size: 10px;
+  line-height: 12px;
 }
 
 .heatmap__weekdays {
@@ -86,12 +87,11 @@
 }
 
 .heat--off {
-  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--cell) 40%, transparent);
 }
 
 .heat--future {
-  border: 1px solid var(--border);
-  opacity: 0.4;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent);
 }
 
 .heat--gap {

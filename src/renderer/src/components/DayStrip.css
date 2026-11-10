@@ -1,88 +1,58 @@
 /*
- * Marks, by shape:
- *   done        filled circle in the habit colour
- *   missed      outlined circle with a slash
- *   pending     outlined circle (today, not done yet)
- *   unscheduled small grey dot
+ * Each day is a small rounded rectangle with the weekday letter and date:
+ *   done        filled in the habit colour, white text
+ *   missed      grey fill, date struck through (a shape cue, not only colour)
+ *   pending     grey fill (today, not done yet)
+ *   unscheduled outline only
+ * Today has a dark ring.
  */
 .day-strip {
   display: flex;
-  gap: 2px;
+  gap: 4px;
 }
 
 .day-strip__day {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  justify-content: center;
   width: 26px;
-  padding: 2px 0;
+  height: 34px;
+  padding: 0;
   border: 0;
-  border-radius: var(--radius-sm);
-  background: transparent;
+  border-radius: 6px;
+  background: var(--cell);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
   transition: background-color var(--fade);
 }
 
-.day-strip__day:hover {
-  background: var(--hover);
-}
-
 .day-strip__label {
-  color: var(--muted);
   font-size: var(--text-xs);
-  line-height: 1;
+  font-weight: 500;
 }
 
-.day-strip__day.is-today .day-strip__label {
-  color: var(--accent);
-  font-weight: 600;
+.day-strip__day--missed:hover,
+.day-strip__day--pending:hover {
+  background: color-mix(in srgb, var(--habit, var(--accent)) 25%, var(--cell));
 }
 
-.day-strip__mark {
-  position: relative;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-}
-
-.day-strip__day--done .day-strip__mark {
+.day-strip__day--done {
   background: var(--habit, var(--accent));
+  color: var(--on-fill);
 }
 
-.day-strip__day--missed .day-strip__mark,
-.day-strip__day--pending .day-strip__mark {
-  border: 1.5px solid var(--muted);
+.day-strip__day--missed .day-strip__date {
+  text-decoration: line-through;
 }
 
-.day-strip__day--missed .day-strip__mark::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 1.5px;
-  height: 14px;
-  background: var(--muted);
-  transform: translate(-50%, -50%) rotate(45deg);
+.day-strip__day--unscheduled {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--border);
 }
 
-.day-strip__day--pending .day-strip__mark {
-  border-color: var(--accent);
-}
-
-.day-strip__day--unscheduled .day-strip__mark::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--cell);
-  transform: translate(-50%, -50%);
-}
-
-@media (prefers-color-scheme: dark) {
-  .day-strip__day--unscheduled .day-strip__mark::after {
-    background: var(--border);
-  }
+.day-strip__day.is-today {
+  box-shadow: inset 0 0 0 1.5px var(--text);
 }

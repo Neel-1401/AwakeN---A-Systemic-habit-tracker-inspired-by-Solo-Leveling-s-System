@@ -24,7 +24,7 @@
   --text-sm: 12px;
   --text-base: 13px;
   --text-md: 14px;
-  --text-lg: 22px;
+  --text-lg: 24px;
 
   --space-1: 4px;
   --space-2: 8px;
@@ -34,8 +34,10 @@
   --space-6: 32px;
   --space-7: 48px;
 
-  --radius: 6px;
-  --radius-sm: 4px;
+  --radius: 7px; /* buttons, inputs */
+  --radius-sm: 5px; /* small cells */
+  --radius-card: 10px;
+  --radius-dialog: 12px;
   --sidebar-width: 208px;
   --content-width: 940px;
   --fade: 150ms ease;

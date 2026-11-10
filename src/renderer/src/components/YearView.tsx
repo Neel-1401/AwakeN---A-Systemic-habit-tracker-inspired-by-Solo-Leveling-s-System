@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type CSSProperties } from 'react';
 import type { WeekStartsOn } from '../../../core/dates';
 import { groupLogsByHabit } from '../../../core/history';
 import type { Habit, HabitLog } from '../../../core/types';
@@ -89,23 +89,30 @@ export function YearView({ habits, logs, year, today, weekStartsOn, onMove, onRe
               color="var(--accent)"
               describe={describeOverallDay}
             />
-            <p className="year-card__note">Weekly habits aren’t included here.</p>
+            <p className="year-card__note">
+              Darker means more of that day’s habits were done. Weekly habits are left out of this one.
+            </p>
           </section>
 
           {data.perHabit.map(({ habit, year: stats }) => (
             <section key={habit.id} className="card year-card" aria-labelledby={`year-${habit.id}`}>
               <header className="year-card__header">
-                <div>
-                  <h3 id={`year-${habit.id}`} className="year-card__title">
-                    <span className="year-card__dot" style={{ background: habit.color }} aria-hidden="true" />
-                    {habit.name}
-                  </h3>
-                  <p className="year-card__schedule">{describeSchedule(habit, weekStartsOn)}</p>
-                </div>
+                <h3
+                  id={`year-${habit.id}`}
+                  className="year-card__title"
+                  style={{ '--habit': habit.color } as CSSProperties}
+                >
+                  <span className="dot" aria-hidden="true" />
+                  {habit.name}
+                  <span className="year-card__schedule">{describeSchedule(habit, weekStartsOn)}</span>
+                </h3>
                 <p className="year-card__stats">
                   <span><strong>{percentText(stats.percent)}</strong> done</span>
-                  <span><strong>{stats.daysDone}</strong> {stats.daysDone === 1 ? 'day' : 'days'} done</span>
-                  <span><strong>{stats.bestStreak}</strong> best streak</span>
+                  <span><strong>{stats.daysDone}</strong> {stats.daysDone === 1 ? 'day' : 'days'}</span>
+                  <span>
+                    best streak <strong>{stats.bestStreak}</strong>{' '}
+                    {habit.frequency === 'weekly' ? 'weeks' : 'days'}
+                  </span>
                 </p>
               </header>
               <Heatmap

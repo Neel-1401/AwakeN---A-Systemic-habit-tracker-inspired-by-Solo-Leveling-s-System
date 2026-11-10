@@ -10,12 +10,13 @@
 .period-toolbar__nav {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: 6px;
 }
 
 .period-toolbar__label {
   min-width: 130px;
-  font-size: var(--text-md);
+  margin: 0 6px;
+  font-size: 16px;
   font-weight: 600;
   text-align: center;
 }
@@ -23,7 +24,7 @@
 .period-toolbar__extra {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: 14px;
   color: var(--muted);
   font-size: var(--text-sm);
 }

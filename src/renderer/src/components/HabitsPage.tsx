@@ -89,23 +89,23 @@ export function HabitsPage({ weekStartsOn, view, onViewChange }: HabitsPageProps
   return (
     <>
       <header className="page-header">
-        <div>
-          <p className="page-header__date">{format(now, 'EEEE d MMMM')}</p>
-          <h1 className="page-header__title">Habits</h1>
-          {summary && !isEmpty && (
-            <p className="page-header__summary" aria-live="polite">
-              {summary.done} of {summary.due} done today
-            </p>
-          )}
-        </div>
-        {!isEmpty && (
-          <button type="button" className="button button--primary" onClick={() => setDialog('new')}>
-            New habit
-          </button>
+        <p className="page-header__date">{format(now, 'EEEE d MMMM yyyy')}</p>
+        <h1 className="page-header__title">Habits</h1>
+        {summary && !isEmpty && (
+          <p className="page-header__summary" aria-live="polite">
+            {summary.due > 0 ? `${summary.done} of ${summary.due} done today` : 'Nothing scheduled today'}
+          </p>
         )}
       </header>
 
-      {!isEmpty && <Tabs value={view} onChange={onViewChange} />}
+      {!isEmpty && (
+        <div className="page-bar">
+          <Tabs value={view} onChange={onViewChange} />
+          <button type="button" className="button button--primary" onClick={() => setDialog('new')}>
+            New habit
+          </button>
+        </div>
+      )}
 
       {error && (
         <div className="error-banner" role="alert">

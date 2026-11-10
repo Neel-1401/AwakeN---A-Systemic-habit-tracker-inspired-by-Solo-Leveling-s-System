@@ -23,7 +23,7 @@ const REPEAT_OPTIONS = [
   { value: 'weekly', label: 'Once a week' },
 ] as const;
 
-const DEFAULT_REMINDER = '09:00';
+const DEFAULT_REMINDER = '20:00';
 
 export function HabitDialog({ habit, weekStartsOn, onClose, onSave, onArchive, onDelete }: HabitDialogProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -103,7 +103,7 @@ export function HabitDialog({ habit, weekStartsOn, onClose, onSave, onArchive, o
             className="input"
             value={name}
             maxLength={80}
-            placeholder="e.g. Read 10 pages"
+            placeholder="e.g. Read 20 pages"
             onChange={(event) => setName(event.target.value)}
           />
         </label>
@@ -133,6 +133,7 @@ export function HabitDialog({ habit, weekStartsOn, onClose, onSave, onArchive, o
         <div className="field">
           <SegmentedControl<Habit['frequency']>
             legend="Repeat"
+            fill
             name="habit-repeat"
             value={frequency}
             options={REPEAT_OPTIONS}
@@ -158,20 +159,23 @@ export function HabitDialog({ habit, weekStartsOn, onClose, onSave, onArchive, o
           {frequency === 'weekly' && <p className="field__hint">Done on any day of the week.</p>}
         </div>
 
-        <div className="field field--inline">
-          <label className="checkbox">
-            <input type="checkbox" checked={remind} onChange={(event) => setRemind(event.target.checked)} />
-            Remind me at
-          </label>
-          <input
-            type="time"
-            className="input input--time"
-            aria-label="Reminder time"
-            value={reminderTime}
-            disabled={!remind}
-            onChange={(event) => setReminderTime(event.target.value)}
-          />
-        </div>
+        <fieldset className="field">
+          <legend className="field__label">Daily reminder</legend>
+          <div className="reminder-row">
+            <label className="checkbox">
+              <input type="checkbox" checked={remind} onChange={(event) => setRemind(event.target.checked)} />
+              Remind me at
+            </label>
+            <input
+              type="time"
+              className="input input--time"
+              aria-label="Reminder time"
+              value={reminderTime}
+              disabled={!remind}
+              onChange={(event) => setReminderTime(event.target.value)}
+            />
+          </div>
+        </fieldset>
 
         {error && (
           <p className="habit-dialog__error" role="alert">
@@ -205,7 +209,7 @@ export function HabitDialog({ habit, weekStartsOn, onClose, onSave, onArchive, o
               <div className="habit-dialog__buttons">
                 <button
                   type="button"
-                  className="button"
+                  className="button button--quiet"
                   disabled={busy}
                   onClick={() => void run(() => onArchive(habit.id))}
                 >
@@ -226,7 +230,7 @@ export function HabitDialog({ habit, weekStartsOn, onClose, onSave, onArchive, o
                 Cancel
               </button>
               <button type="submit" className="button button--primary" disabled={!canSave}>
-                Save
+                Save habit
               </button>
             </div>
           </div>

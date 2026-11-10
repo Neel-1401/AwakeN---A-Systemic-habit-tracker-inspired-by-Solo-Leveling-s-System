@@ -5,24 +5,24 @@
 }
 
 .segmented__legend {
-  margin-bottom: var(--space-2);
+  margin-bottom: 6px;
   padding: 0;
-  font-weight: 500;
+  color: var(--muted);
+  font-size: var(--text-sm);
 }
 
 .segmented__options {
   display: inline-flex;
+  gap: 2px;
+  padding: 2px;
   border: 1px solid var(--border);
-  border-radius: var(--radius);
+  border-radius: 8px;
   background: var(--surface);
 }
 
 .segmented__option {
   position: relative;
-}
-
-.segmented__option + .segmented__option {
-  border-left: 1px solid var(--border);
+  flex: 1;
 }
 
 .segmented__option input {
@@ -33,32 +33,31 @@
 
 .segmented__option span {
   display: block;
-  padding: var(--space-1) var(--space-3);
+  padding: 6px var(--space-3);
+  border-radius: 6px;
   color: var(--muted);
+  text-align: center;
   cursor: pointer;
   transition: background-color var(--fade), color var(--fade);
 }
 
-.segmented__option:first-child span {
-  border-radius: var(--radius) 0 0 var(--radius);
-}
-
-.segmented__option:last-child span {
-  border-radius: 0 var(--radius) var(--radius) 0;
-}
-
 .segmented__option span:hover {
-  background: var(--hover);
+  color: var(--text);
 }
 
-/* Selected: a darker fill than hover, plus bold text, so it isn't shown by colour alone. */
+/* Selected: a fill plus heavier text, so it isn't shown by colour alone. */
 .segmented__option input:checked + span {
-  background: var(--cell);
+  background: var(--hover);
   color: var(--text);
-  font-weight: 600;
+  font-weight: 500;
 }
 
 .segmented__option input:focus-visible + span {
   outline: 2px solid var(--accent);
-  outline-offset: 2px;
+  outline-offset: 1px;
+}
+
+/* Inside a form the track spans the full width. */
+.segmented--fill .segmented__options {
+  display: flex;
 }

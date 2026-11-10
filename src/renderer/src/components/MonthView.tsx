@@ -57,6 +57,12 @@ export function MonthView({ habits, logs, year, month, today, weekStartsOn, onMo
           <MonthGrid key={`${year}-${month}`} rows={rows} today={today} onToggle={onToggle} onEdit={onEdit} />
         )
       )}
+      {habits.length > 0 && (
+        <p className="note month-note">
+          Click any past day to mark it done or undo it. Rate is days done out of days scheduled so far
+          this month.
+        </p>
+      )}
     </div>
   );
 }
