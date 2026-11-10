@@ -1,6 +1,6 @@
 import type { WeekStartsOn } from '../core/dates';
 import type { HabitColor } from '../core/palette';
-import type { RepeatKind } from '../core/recurrence';
+import type { RepeatChoice } from '../core/recurrence';
 import type { CalendarEvent, Habit, HabitLog } from '../core/types';
 
 /** What the New/Edit habit dialog sends. Create and update take the same shape. */
@@ -27,8 +27,12 @@ export interface EventInput {
   allDay: boolean;
   startAt: string;
   endAt: string;
-  /** null = doesn't repeat. Stored as Google's RRULE text. */
-  repeat: RepeatKind | null;
+  /**
+   * null = doesn't repeat. Stored as Google's RRULE text.
+   * 'custom' (updates only) keeps the event's existing rule unchanged, so saving an event whose
+   * rule the app can't edit never drops its repeats.
+   */
+  repeat: RepeatChoice | null;
   /** Minutes before the start. Sent to Google as popup reminders in Phase 6. */
   reminderMinutes: number[];
 }

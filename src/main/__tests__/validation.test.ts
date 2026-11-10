@@ -167,6 +167,7 @@ describe('parseEventInput', () => {
     expect(() => parseEventInput({ ...timed, startAt: '2026-11-09 18:00' })).toThrow('Start must be a date and time');
     expect(() => parseEventInput({ ...timed, endAt: '2027-12-01T00:00:00Z' })).toThrow('at most a year');
     expect(() => parseEventInput({ ...timed, repeat: 'monthly' })).toThrow('Repeat');
+    expect(parseEventInput({ ...timed, repeat: 'custom' }).repeat).toBe('custom');
     expect(() => parseEventInput({ ...timed, reminderMinutes: [-5] })).toThrow('between 0 minutes and 4 weeks');
     expect(() => parseEventInput({ ...timed, reminderMinutes: [40321] })).toThrow('between 0 minutes and 4 weeks');
     expect(() => parseEventInput({ ...timed, reminderMinutes: [1, 2, 3, 4, 5, 6] })).toThrow('At most 5');

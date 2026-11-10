@@ -25,6 +25,18 @@ export function parseRecurrenceRule(rule: string | null | undefined): RepeatKind
   return kinds.find((kind) => RECURRENCE_RULES[kind] === normalized) ?? null;
 }
 
+/**
+ * What the event dialog offers: one of our kinds, or 'custom' for any other rule (for example a
+ * monthly event from Google). A custom rule can't be edited in the app, only kept or removed.
+ */
+export type RepeatChoice = RepeatKind | 'custom';
+
+/** The dialog's choice for a stored rule: null when there's no rule. */
+export function repeatChoice(rule: string | null | undefined): RepeatChoice | null {
+  if (!rule?.trim()) return null;
+  return parseRecurrenceRule(rule) ?? 'custom';
+}
+
 function repeatsAt(repeat: RepeatKind, offset: number, date: Date): boolean {
   if (repeat === 'daily') return true;
   if (repeat === 'weekly') return offset % 7 === 0;

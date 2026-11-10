@@ -8,6 +8,7 @@ import { createEvent, deleteEvent, getEvent, listEventsInRange, toggleTaskDone, 
 // November 2026: the 9th is a Monday. Times are local, so this passes in any time zone.
 const iso = (day: number, h: number, m = 0) => new Date(2026, 10, day, h, m).toISOString();
 const NOW = new Date(2026, 10, 9, 8, 0);
+const RECURRENCE_RULES_DAILY = 'RRULE:FREQ=DAILY';
 
 const lecture: EventInput = {
   title: 'Algorithms lecture',
@@ -76,6 +77,24 @@ describe('events repository', () => {
     expect(titlesOn('2026-11-09', '2026-11-16')).toEqual([]);
     expect(() => getEvent(db, event.id)).toThrow('Event not found');
     expect(db.prepare('SELECT deletedAt FROM events WHERE id = ?').get(event.id)).toEqual({ deletedAt: NOW.toISOString() });
+  });
+
+  it('keeps a custom rule when saved with repeat custom, and removes it only when asked', () => {
+    const event = createEvent(db, lecture, NOW);
+    // A rule the app can't edit, as Google may send in Phase 7.
+    db.prepare('UPDATE events SET recurrenceRule = ? WHERE id = ?').run('RRULE:FREQ=MONTHLY', event.id);
+
+    const renamed = updateEvent(db, event.id, { ...lecture, title: 'Renamed', repeat: 'custom' }, NOW);
+    expect(renamed).toMatchObject({ title: 'Renamed', recurrenceRule: 'RRULE:FREQ=MONTHLY' });
+
+    expect(updateEvent(db, event.id, { ...lecture, repeat: null }, NOW).recurrenceRule).toBeNull();
+  });
+
+  it('refuses repeat custom on a new event or one without a custom rule', () => {
+    expect(() => createEvent(db, { ...lecture, repeat: 'custom' }, NOW)).toThrow('custom repeat');
+    const daily = createEvent(db, { ...lecture, repeat: 'daily' }, NOW);
+    expect(() => updateEvent(db, daily.id, { ...lecture, repeat: 'custom' }, NOW)).toThrow('no custom repeat');
+    expect(getEvent(db, daily.id).recurrenceRule).toBe(RECURRENCE_RULES_DAILY);
   });
 });
 

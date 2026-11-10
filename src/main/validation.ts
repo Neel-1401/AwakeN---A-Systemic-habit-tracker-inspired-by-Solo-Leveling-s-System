@@ -131,8 +131,14 @@ export function parseEventInput(value: unknown): EventInput {
   if (span > MAX_EVENT_DAYS) throw new ValidationError('An event can last at most a year');
 
   const repeat = value.repeat ?? null;
-  if (repeat !== null && repeat !== 'daily' && repeat !== 'weekly' && repeat !== 'weekdays') {
-    throw new ValidationError('Repeat must be none, daily, weekly or weekdays');
+  if (
+    repeat !== null &&
+    repeat !== 'daily' &&
+    repeat !== 'weekly' &&
+    repeat !== 'weekdays' &&
+    repeat !== 'custom'
+  ) {
+    throw new ValidationError('Repeat must be none, daily, weekly, weekdays or custom');
   }
 
   return {

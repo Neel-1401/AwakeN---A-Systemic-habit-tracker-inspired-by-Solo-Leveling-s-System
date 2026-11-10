@@ -3,7 +3,7 @@ import type Database from 'better-sqlite3';
 import { addDays } from 'date-fns';
 import { occurrencesInRange, occursOn } from '../../../core/calendar';
 import { parseDay, toDay } from '../../../core/dates';
-import { parseRecurrenceRule, RECURRENCE_RULES } from '../../../core/recurrence';
+import { parseRecurrenceRule, RECURRENCE_RULES, repeatChoice } from '../../../core/recurrence';
 import type { CalendarEvent } from '../../../core/types';
 import type { EventInput, EventOccurrenceDto } from '../../../shared/ipc';
 
@@ -39,7 +39,8 @@ function rowToEvent(row: EventRow): CalendarEvent {
   return { ...row, allDay: row.allDay === 1, reminderMinutes: parseMinutes(row.reminderMinutes) };
 }
 
-function inputToColumns(input: EventInput) {
+/** recurrenceRule is decided by the caller, since 'custom' depends on what's stored. */
+function inputToColumns(input: EventInput, recurrenceRule: string | null) {
   return {
     title: input.title,
     description: input.description,
@@ -48,7 +49,7 @@ function inputToColumns(input: EventInput) {
     allDay: input.allDay ? 1 : 0,
     kind: input.kind,
     reminderMinutes: JSON.stringify(input.reminderMinutes),
-    recurrenceRule: input.repeat ? RECURRENCE_RULES[input.repeat] : null,
+    recurrenceRule,
   };
 }
 
@@ -62,6 +63,8 @@ export function getEvent(db: Database.Database, id: string): CalendarEvent {
 }
 
 export function createEvent(db: Database.Database, input: EventInput, now = new Date()): CalendarEvent {
+  if (input.repeat === 'custom') throw new Error('A new event can’t keep a custom repeat');
+  const recurrenceRule = input.repeat ? RECURRENCE_RULES[input.repeat] : null;
   const id = randomUUID();
   const timestamp = now.toISOString();
   db.prepare(
@@ -71,25 +74,37 @@ export function createEvent(db: Database.Database, input: EventInput, now = new 
      VALUES
        (@id, @title, @description, @startAt, @endAt, @allDay, @kind, NULL, @reminderMinutes,
         @recurrenceRule, NULL, NULL, 'local', @timestamp, @timestamp, NULL)`
-  ).run({ id, ...inputToColumns(input), timestamp });
+  ).run({ id, ...inputToColumns(input, recurrenceRule), timestamp });
   return getEvent(db, id);
 }
 
-/** Repeating events: changes the whole series. */
+/**
+ * Repeating events: changes the whole series. repeat 'custom' keeps the stored rule as it is;
+ * null removes it.
+ */
 export function updateEvent(
   db: Database.Database,
   id: string,
   input: EventInput,
   now = new Date()
 ): CalendarEvent {
-  getEvent(db, id);
+  const existing = getEvent(db, id);
+  let recurrenceRule: string | null;
+  if (input.repeat === 'custom') {
+    if (repeatChoice(existing.recurrenceRule) !== 'custom') {
+      throw new Error('This event has no custom repeat to keep');
+    }
+    recurrenceRule = existing.recurrenceRule ?? null;
+  } else {
+    recurrenceRule = input.repeat ? RECURRENCE_RULES[input.repeat] : null;
+  }
   db.prepare(
     `UPDATE events
      SET title = @title, description = @description, startAt = @startAt, endAt = @endAt,
          allDay = @allDay, kind = @kind, reminderMinutes = @reminderMinutes,
          recurrenceRule = @recurrenceRule, updatedAt = @timestamp
      WHERE id = @id`
-  ).run({ id, ...inputToColumns(input), timestamp: now.toISOString() });
+  ).run({ id, ...inputToColumns(input, recurrenceRule), timestamp: now.toISOString() });
   return getEvent(db, id);
 }
 

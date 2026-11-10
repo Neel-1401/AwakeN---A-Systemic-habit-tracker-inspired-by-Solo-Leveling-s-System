@@ -3,6 +3,7 @@ import {
   RECURRENCE_RULES,
   expandEvent,
   parseRecurrenceRule,
+  repeatChoice,
   type RecurringEvent,
 } from '../recurrence';
 
@@ -113,6 +114,14 @@ describe('expandEvent', () => {
   it('shows an unsupported rule as a single event instead of dropping it', () => {
     const item = event(at(3, 9), at(3, 10), 'RRULE:FREQ=MONTHLY');
     expect(startDays(expandEvent(item, at(1), at(31)))).toEqual([3]);
+  });
+
+  it('labels any rule it cannot edit as custom, and no rule as null', () => {
+    expect(repeatChoice(null)).toBeNull();
+    expect(repeatChoice('  ')).toBeNull();
+    expect(repeatChoice(RECURRENCE_RULES.weekdays)).toBe('weekdays');
+    expect(repeatChoice('RRULE:FREQ=MONTHLY')).toBe('custom');
+    expect(repeatChoice('RRULE:FREQ=WEEKLY;BYDAY=MO,WE')).toBe('custom');
   });
 
   it('returns the original event on each occurrence', () => {
