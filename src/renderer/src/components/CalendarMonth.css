@@ -1,0 +1,135 @@
+/* Month grid: neutral like the time grid; the accent marks today only. Task tick boxes are in CalendarItem.css. */
+.cal-month {
+  overflow: hidden;
+}
+
+.cal-month__weekdays,
+.cal-month__week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.cal-month__weekdays {
+  border-bottom: 1px solid var(--border);
+}
+
+.cal-month__weekdays span {
+  padding: var(--space-2) 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+  text-align: center;
+}
+
+.cal-month__week + .cal-month__week {
+  border-top: 1px solid var(--border);
+}
+
+.cal-month__day {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  min-height: 104px;
+  padding: 4px 4px 6px;
+  cursor: copy;
+}
+
+.cal-month__day + .cal-month__day {
+  border-left: 1px solid var(--border);
+}
+
+.cal-month__day.is-outside {
+  background: color-mix(in srgb, var(--cell) 35%, transparent);
+}
+
+.cal-month__date {
+  align-self: flex-start;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  transition: background-color var(--fade);
+}
+
+.cal-month__date:hover {
+  background: var(--hover);
+}
+
+.cal-month__day.is-outside .cal-month__date {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.cal-month__day.is-today .cal-month__date {
+  background: var(--accent);
+  color: var(--on-fill);
+}
+
+.cal-month__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 1px 4px;
+  border-radius: var(--radius-sm);
+  cursor: default;
+}
+
+.cal-month__item.is-all-day {
+  background: var(--cell);
+}
+
+.cal-month__open {
+  display: flex;
+  flex: 1;
+  gap: 5px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  text-align: left;
+}
+
+.cal-month__time {
+  flex: none;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
+
+.cal-month__title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cal-month__open:hover .cal-month__title {
+  text-decoration: underline;
+}
+
+.cal-month__item.is-done .cal-month__title {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.cal-month__more {
+  align-self: flex-start;
+  padding: 0 4px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--muted);
+  font-size: var(--text-xs);
+}
+
+.cal-month__more:hover {
+  background: var(--hover);
+  color: var(--text);
+}

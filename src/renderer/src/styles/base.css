@@ -182,3 +182,18 @@ button:disabled {
 .fade-in {
   animation: fade-in var(--fade);
 }
+
+/* Keyboard keys in hints, e.g. <kbd>N</kbd>. */
+kbd {
+  display: inline-block;
+  min-width: 18px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  line-height: 16px;
+  text-align: center;
+}

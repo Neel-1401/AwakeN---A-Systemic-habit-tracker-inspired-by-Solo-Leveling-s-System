@@ -73,3 +73,7 @@
   margin-top: var(--space-1);
   font-size: var(--text-sm);
 }
+
+.calendar-empty {
+  margin-bottom: var(--space-3);
+}
