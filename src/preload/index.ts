@@ -37,6 +37,9 @@ const api: AwakenApi = {
   reminders: {
     test: () => invoke('reminders:test'),
   },
+  dev: {
+    seedSample: () => invoke('dev:seedSample'),
+  },
   events: {
     onShowToday(listener) {
       // Wrap the listener so the renderer never sees Electron's event object.

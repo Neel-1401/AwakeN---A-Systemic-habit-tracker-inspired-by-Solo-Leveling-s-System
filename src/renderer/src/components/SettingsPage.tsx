@@ -69,6 +69,7 @@ export function SettingsPage({ settings, onChange }: SettingsPageProps) {
             Shown at a habit’s reminder time if it isn’t done yet, while AwakeN is open.
           </p>
           {import.meta.env.DEV && <TestReminderButton />}
+          {import.meta.env.DEV && <SampleDataButton />}
         </fieldset>
       </section>
     </div>
@@ -94,6 +95,30 @@ function TestReminderButton() {
       </button>
       <span className="muted" aria-live="polite">
         {status || 'Dev only'}
+      </span>
+    </p>
+  );
+}
+
+/** Development builds only: fills an empty database so every view has something to show. */
+function SampleDataButton() {
+  const [status, setStatus] = useState('');
+  return (
+    <p className="settings-test">
+      <button
+        type="button"
+        className="button"
+        onClick={() =>
+          window.api.dev
+            .seedSample()
+            .then(({ habits, events }) => setStatus(`Added ${habits} habits and ${events} calendar items.`))
+            .catch((caught) => setStatus(errorMessage(caught)))
+        }
+      >
+        Add sample data
+      </button>
+      <span className="muted" aria-live="polite">
+        {status || 'Dev only, empty database only'}
       </span>
     </p>
   );

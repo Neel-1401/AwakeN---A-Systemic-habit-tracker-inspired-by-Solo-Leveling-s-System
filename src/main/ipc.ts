@@ -18,6 +18,7 @@ import {
   updateHabit,
 } from './db/repositories/habits';
 import { getAppSettings, updateAppSettings } from './db/repositories/settings';
+import { seedSampleData } from './devSeed';
 import {
   parseDayKey,
   parseDayRange,
@@ -44,6 +45,8 @@ function handle<C extends IpcChannel>(channel: C, handler: Handler<C>): void {
 interface IpcOptions {
   /** Development only: shows a sample notification for the Settings "Test reminder" button. */
   testReminder?: () => void;
+  /** Development only: registers dev:seedSample (left out of packaged builds). */
+  devSeed?: boolean;
 }
 
 export function registerIpcHandlers(db: Database.Database, options: IpcOptions = {}): void {
@@ -51,6 +54,7 @@ export function registerIpcHandlers(db: Database.Database, options: IpcOptions =
     const testReminder = options.testReminder;
     handle('reminders:test', () => testReminder());
   }
+  if (options.devSeed) handle('dev:seedSample', () => seedSampleData(db));
   handle('habits:list', () => listHabits(db));
   handle('habits:create', (input) => createHabit(db, parseHabitInput(input)));
   handle('habits:update', (id, input) => updateHabit(db, parseId(id), parseHabitInput(input)));

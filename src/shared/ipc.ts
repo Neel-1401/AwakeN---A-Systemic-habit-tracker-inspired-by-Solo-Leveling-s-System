@@ -92,6 +92,8 @@ export interface IpcContract {
   'events:toggleTaskDone': { args: [id: string, occurrenceDay?: string]; result: boolean };
   /** Development builds only: shows a sample reminder notification straight away. */
   'reminders:test': { args: []; result: void };
+  /** Development builds only: fills an empty database with sample habits and events. */
+  'dev:seedSample': { args: []; result: { habits: number; events: number } };
 }
 
 /** Messages main sends to the window (the other direction from IpcContract). */
@@ -128,6 +130,10 @@ export interface AwakenApi {
   reminders: {
     /** Development builds only. */
     test(): Promise<void>;
+  };
+  dev: {
+    /** Development builds only. Refuses unless there are no habits and no events. */
+    seedSample(): Promise<{ habits: number; events: number }>;
   };
   events: {
     /** Calls `listener` when main asks for the Today tab. Returns a function that unsubscribes. */

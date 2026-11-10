@@ -61,6 +61,7 @@ app.whenReady().then(() => {
   // Apply the saved theme before the window opens.
   nativeTheme.themeSource = getAppSettings(db).theme;
   registerIpcHandlers(db, {
+    devSeed: !app.isPackaged,
     testReminder: app.isPackaged
       ? undefined
       : () => showNotification('Test reminder', '6:00 pm · not done yet today', showToday),
