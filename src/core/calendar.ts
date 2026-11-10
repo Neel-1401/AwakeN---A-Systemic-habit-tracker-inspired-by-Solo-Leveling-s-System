@@ -1,5 +1,5 @@
-import { addDays, differenceInMinutes } from 'date-fns';
-import { parseDay, toDay } from './dates';
+import { addDays, differenceInMinutes, endOfMonth, parseISO, startOfWeek } from 'date-fns';
+import { parseDay, toDay, type WeekStartsOn } from './dates';
 import { expandEvent, type RecurringEvent } from './recurrence';
 
 /**
@@ -117,4 +117,51 @@ export function layoutDay(items: readonly LayoutInput[], day: string, minMinutes
   closeGroup();
 
   return placed.map(({ id, top, bottom, column, columns }) => ({ id, top, bottom, column, columns }));
+}
+
+/**
+ * The month as rows of 7 day keys, starting on `weekStartsOn`. Rows begin in the week of the 1st
+ * and end in the week of the last day, so there are 4 to 6 of them; days from the neighbouring
+ * months fill the edges. `month` is 1–12.
+ */
+export function monthWeeks(year: number, month: number, weekStartsOn: WeekStartsOn): string[][] {
+  const first = new Date(year, month - 1, 1);
+  const last = endOfMonth(first);
+  const weeks: string[][] = [];
+  for (let start = startOfWeek(first, { weekStartsOn }); start <= last; start = addDays(start, 7)) {
+    weeks.push(Array.from({ length: 7 }, (_, i) => toDay(addDays(start, i))));
+  }
+  return weeks;
+}
+
+/** Where an item sits in time, in the stored format (see the top of this file). */
+export interface ItemSpan {
+  allDay: boolean;
+  startAt: string;
+  endAt: string;
+}
+
+/** The first and last local day an item shows on. */
+function spanDays({ allDay, startAt, endAt }: ItemSpan): [string, string] {
+  if (allDay) return [startAt, toDay(addDays(parseDay(endAt), -1))];
+  const start = parseISO(startAt);
+  const end = parseISO(endAt);
+  // An item ending exactly at midnight doesn't show on the next day; a zero-length one shows on its start day.
+  const lastMoment = end > start ? new Date(end.getTime() - 1) : start;
+  return [toDay(start), toDay(lastMoment)];
+}
+
+/**
+ * Puts each item on every one of `days` it covers: all-day items on each day of their span,
+ * timed ones on each day they touch. Within a day, all-day items come first; otherwise the input
+ * order is kept (listInRange already sorts by start).
+ */
+export function groupByDay<T>(items: readonly T[], days: readonly string[], span: (item: T) => ItemSpan): Map<string, T[]> {
+  const byDay = new Map(days.map((day) => [day, [] as T[]]));
+  const placed = items.map((item) => ({ item, allDay: span(item).allDay, range: spanDays(span(item)) }));
+  for (const day of days) {
+    const here = placed.filter(({ range: [first, last] }) => first <= day && day <= last);
+    byDay.set(day, [...here.filter((p) => p.allDay), ...here.filter((p) => !p.allDay)].map((p) => p.item));
+  }
+  return byDay;
 }

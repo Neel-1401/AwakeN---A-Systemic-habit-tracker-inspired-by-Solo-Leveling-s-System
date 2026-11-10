@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layoutDay, occurrencesInRange, occursOn, type CalendarItem } from '../calendar';
+import { groupByDay, layoutDay, monthWeeks, occurrencesInRange, occursOn, type CalendarItem, type ItemSpan } from '../calendar';
 import { RECURRENCE_RULES } from '../recurrence';
 
 // November 2026: the 1st is a Sunday, the 6th a Friday, the 9th a Monday.
@@ -124,5 +124,56 @@ describe('layoutDay', () => {
   it('gives a zero-length task a minimum height', () => {
     const task = item('task', at(11, 9, 17), at(11, 9, 17));
     expect(layoutDay([task], '2026-11-09')).toEqual([{ id: 'task', top: 1020, bottom: 1050, column: 0, columns: 1 }]);
+  });
+});
+
+describe('monthWeeks', () => {
+  it('covers November 2026 in whole Monday-first weeks', () => {
+    const weeks = monthWeeks(2026, 11, 1);
+    expect(weeks).toHaveLength(6);
+    expect(weeks[0][0]).toBe('2026-10-26');
+    expect(weeks[0][6]).toBe('2026-11-01');
+    expect(weeks[5][6]).toBe('2026-12-06');
+    expect(weeks.every((week) => week.length === 7)).toBe(true);
+  });
+
+  it('starts on Sunday when asked, and needs only 4 rows for February 2026', () => {
+    const weeks = monthWeeks(2026, 2, 0);
+    expect(weeks).toHaveLength(4);
+    expect(weeks[0][0]).toBe('2026-02-01');
+    expect(weeks[3][6]).toBe('2026-02-28');
+  });
+});
+
+describe('groupByDay', () => {
+  const days = ['2026-11-09', '2026-11-10', '2026-11-11'];
+  const item = (name: string, span: ItemSpan) => ({ name, span });
+  const names = (map: Map<string, { name: string }[]>) =>
+    Object.fromEntries([...map].map(([day, list]) => [day, list.map((i) => i.name)]));
+
+  it('places all-day items on each day of their span, before timed ones', () => {
+    const items = [
+      item('lecture', { allDay: false, startAt: iso(11, 10, 9), endAt: iso(11, 10, 10) }),
+      item('trip', { allDay: true, startAt: '2026-11-10', endAt: '2026-11-12' }),
+    ];
+    expect(names(groupByDay(items, days, (i) => i.span))).toEqual({
+      '2026-11-09': [],
+      '2026-11-10': ['trip', 'lecture'],
+      '2026-11-11': ['trip'],
+    });
+  });
+
+  it('shows a timed item on every day it touches, but not the day it ends at midnight', () => {
+    const items = [
+      item('overnight', { allDay: false, startAt: iso(11, 9, 22), endAt: iso(11, 10, 2) }),
+      item('until midnight', { allDay: false, startAt: iso(11, 11, 20), endAt: iso(11, 12, 0) }),
+      item('task', { allDay: false, startAt: iso(11, 11, 17), endAt: iso(11, 11, 17) }),
+    ];
+    expect(names(groupByDay(items, [...days, '2026-11-12'], (i) => i.span))).toEqual({
+      '2026-11-09': ['overnight'],
+      '2026-11-10': ['overnight'],
+      '2026-11-11': ['until midnight', 'task'],
+      '2026-11-12': [],
+    });
   });
 });
