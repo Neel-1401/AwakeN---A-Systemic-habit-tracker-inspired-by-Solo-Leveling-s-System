@@ -27,7 +27,7 @@ const REPEAT_LABELS: Record<RepeatChoice | 'none', string> = {
   daily: 'Every day',
   weekly: 'Every week',
   weekdays: 'Every weekday (Mon–Fri)',
-  custom: 'Custom (kept as it is)',
+  custom: 'Custom (set in Google Calendar)',
 };
 
 /** Same limit as main's validation. */
@@ -52,9 +52,12 @@ export function EventDialog({ initial, event, onClose, onSave, onDelete }: Event
 
   const isTask = form.kind === 'task';
   const noun = isTask ? 'task' : 'event';
-  // "Custom" only appears for an event that already has a rule the app can't edit.
-  const repeatChoices: (RepeatChoice | 'none')[] = ['none', 'daily', 'weekly', 'weekdays'];
-  if (initial.repeat === 'custom') repeatChoices.push('custom');
+  // "Custom" only appears for an event that already has a rule the app can't edit. The picker is
+  // then locked, so saving always keeps that rule; it can only be changed in Google Calendar.
+  const customRepeat = initial.repeat === 'custom';
+  const repeatChoices: (RepeatChoice | 'none')[] = customRepeat
+    ? ['custom']
+    : ['none', 'daily', 'weekly', 'weekdays'];
   const reminderChoices = [...new Set([...REMINDER_PRESETS, ...form.reminderMinutes])].sort((a, b) => a - b);
 
   async function run(action: () => Promise<void>) {
@@ -183,6 +186,8 @@ export function EventDialog({ initial, event, onClose, onSave, onDelete }: Event
           <select
             className="input"
             value={form.repeat ?? 'none'}
+            disabled={customRepeat}
+            aria-describedby={customRepeat ? 'event-repeat-hint' : undefined}
             onChange={(e) => {
               const value = e.target.value as RepeatChoice | 'none';
               set({ repeat: value === 'none' ? null : value });
@@ -194,8 +199,10 @@ export function EventDialog({ initial, event, onClose, onSave, onDelete }: Event
               </option>
             ))}
           </select>
-          {form.repeat === 'custom' && (
-            <span className="field__hint">This repeat was set outside AwakeN. It’s kept unless you change it here.</span>
+          {customRepeat && (
+            <span id="event-repeat-hint" className="field__hint">
+              This repeat can only be changed in Google Calendar. Saving here keeps it.
+            </span>
           )}
           {event?.recurrenceRule && <span className="field__hint">Changes apply to every repeat.</span>}
         </label>
