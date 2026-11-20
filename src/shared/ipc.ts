@@ -64,6 +64,32 @@ export interface AppSettings {
 }
 
 /**
+ * The Google Calendar connection as Settings shows it. Tokens never leave main: this only says
+ * which account is connected and whether its sign-in still works.
+ */
+export type GoogleStatus = {
+  /** A one-off message about what just happened, e.g. "Google sign-in was cancelled." */
+  notice?: string;
+} & (
+  /** .env has no GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET, so sign-in can't start. */
+  | { state: 'not-configured' }
+  | { state: 'not-connected' }
+  /** The sign-in page is open in the browser and AwakeN is waiting for Google's reply. */
+  | { state: 'connecting' }
+  | { state: 'connected'; email: string }
+  /** Google refused the stored sign-in: revoked, or a Testing-mode token older than ~7 days. */
+  | { state: 'needs-reconnect'; email: string }
+);
+
+export type GoogleState = GoogleStatus['state'];
+
+/** Result of the dev-only "Test connection" button. */
+export interface GoogleTestResult {
+  ok: boolean;
+  message: string;
+}
+
+/**
  * Every IPC channel, with the arguments the renderer sends and what main sends back.
  * Preload and main are both typed from this one map, so they can't drift apart.
  */
@@ -94,12 +120,26 @@ export interface IpcContract {
   'reminders:test': { args: []; result: void };
   /** Development builds only: fills an empty database with sample habits and events. */
   'dev:seedSample': { args: []; result: { habits: number; events: number } };
+  'google:getStatus': { args: []; result: GoogleStatus };
+  /**
+   * Opens Google's sign-in page in the browser and resolves once the user comes back, gives up,
+   * or 5 minutes pass. Statuses along the way also arrive through onGoogleStatus.
+   */
+  'google:connect': { args: []; result: GoogleStatus };
+  /** Stops waiting for a sign-in started by google:connect. */
+  'google:cancelConnect': { args: []; result: void };
+  /** Revokes access with Google and forgets the sign-in. Local events are left alone. */
+  'google:disconnect': { args: []; result: GoogleStatus };
+  /** Development builds only: lists one upcoming event from the primary calendar. */
+  'google:testConnection': { args: []; result: GoogleTestResult };
 }
 
 /** Messages main sends to the window (the other direction from IpcContract). */
 export const MainEvents = {
   /** A reminder notification was clicked: show the Today tab. */
   showToday: 'app:showToday',
+  /** The Google connection changed (sent with the new GoogleStatus). */
+  googleStatus: 'google:status',
 } as const;
 
 export type IpcChannel = keyof IpcContract;
@@ -135,8 +175,18 @@ export interface AwakenApi {
     /** Development builds only. Refuses unless there are no habits and no events. */
     seedSample(): Promise<{ habits: number; events: number }>;
   };
+  google: {
+    getStatus(): Promise<GoogleStatus>;
+    connect(): Promise<GoogleStatus>;
+    cancelConnect(): Promise<void>;
+    disconnect(): Promise<GoogleStatus>;
+    /** Development builds only. */
+    testConnection(): Promise<GoogleTestResult>;
+  };
   events: {
     /** Calls `listener` when main asks for the Today tab. Returns a function that unsubscribes. */
     onShowToday(listener: () => void): () => void;
+    /** Calls `listener` whenever the Google connection changes. Returns an unsubscribe function. */
+    onGoogleStatus(listener: (status: GoogleStatus) => void): () => void;
   };
 }

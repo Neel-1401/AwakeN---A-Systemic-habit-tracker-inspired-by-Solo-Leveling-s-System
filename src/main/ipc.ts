@@ -19,6 +19,7 @@ import {
 } from './db/repositories/habits';
 import { getAppSettings, updateAppSettings } from './db/repositories/settings';
 import { seedSampleData } from './devSeed';
+import type { GoogleAuth } from './google/googleAuth';
 import {
   parseDayKey,
   parseDayRange,
@@ -47,9 +48,11 @@ interface IpcOptions {
   testReminder?: () => void;
   /** Development only: registers dev:seedSample (left out of packaged builds). */
   devSeed?: boolean;
+  /** Development only: registers google:testConnection. */
+  googleTest?: boolean;
 }
 
-export function registerIpcHandlers(db: Database.Database, options: IpcOptions = {}): void {
+export function registerIpcHandlers(db: Database.Database, google: GoogleAuth, options: IpcOptions = {}): void {
   if (options.testReminder) {
     const testReminder = options.testReminder;
     handle('reminders:test', () => testReminder());
@@ -72,6 +75,12 @@ export function registerIpcHandlers(db: Database.Database, options: IpcOptions =
   handle('events:toggleTaskDone', (id, day) =>
     toggleTaskDone(db, parseId(id), day === undefined || day === null ? undefined : parseDayKey(day))
   );
+  // No arguments to check: the renderer can only ask, and nothing returned contains a token.
+  handle('google:getStatus', () => google.getStatus());
+  handle('google:connect', () => google.connect());
+  handle('google:cancelConnect', () => google.cancelConnect());
+  handle('google:disconnect', () => google.disconnect());
+  if (options.googleTest) handle('google:testConnection', () => google.testConnection());
   handle('settings:get', () => getAppSettings(db));
   handle('settings:update', (changes) => {
     const parsed = parseSettingsChanges(changes);

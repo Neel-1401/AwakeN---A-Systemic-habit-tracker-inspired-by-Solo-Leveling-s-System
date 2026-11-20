@@ -1,5 +1,5 @@
-import { contextBridge, ipcRenderer } from 'electron';
-import { MainEvents, type AwakenApi, type IpcChannel, type IpcContract } from '../shared/ipc';
+import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron';
+import { MainEvents, type AwakenApi, type GoogleStatus, type IpcChannel, type IpcContract } from '../shared/ipc';
 
 function invoke<C extends IpcChannel>(
   channel: C,
@@ -40,12 +40,24 @@ const api: AwakenApi = {
   dev: {
     seedSample: () => invoke('dev:seedSample'),
   },
+  google: {
+    getStatus: () => invoke('google:getStatus'),
+    connect: () => invoke('google:connect'),
+    cancelConnect: () => invoke('google:cancelConnect'),
+    disconnect: () => invoke('google:disconnect'),
+    testConnection: () => invoke('google:testConnection'),
+  },
   events: {
     onShowToday(listener) {
       // Wrap the listener so the renderer never sees Electron's event object.
       const handler = () => listener();
       ipcRenderer.on(MainEvents.showToday, handler);
       return () => ipcRenderer.removeListener(MainEvents.showToday, handler);
+    },
+    onGoogleStatus(listener) {
+      const handler = (_event: IpcRendererEvent, status: GoogleStatus) => listener(status);
+      ipcRenderer.on(MainEvents.googleStatus, handler);
+      return () => ipcRenderer.removeListener(MainEvents.googleStatus, handler);
     },
   },
 };
