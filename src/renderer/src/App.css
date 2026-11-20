@@ -53,6 +53,16 @@
   margin-bottom: var(--space-2);
 }
 
+.settings-card {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+}
+
+.settings-card + .settings-card {
+  margin-top: var(--space-4);
+}
+
 .settings-field {
   display: flex;
   flex-direction: column;

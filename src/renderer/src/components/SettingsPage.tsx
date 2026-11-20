@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import type { WeekStartsOn } from '../../../core/dates';
 import type { AppSettings, ThemeSetting } from '../../../shared/ipc';
+import { useGoogle } from '../hooks/useGoogle';
 import { errorMessage } from '../lib/format';
+import { GoogleSection } from './GoogleSection';
 import { SegmentedControl } from './SegmentedControl';
 
 interface SettingsPageProps {
@@ -40,7 +42,7 @@ export function SettingsPage({ settings, onChange }: SettingsPageProps) {
         </div>
       )}
 
-      <section className="card" style={{ display: 'grid', gap: 'var(--space-5)', padding: 'var(--space-5)' }}>
+      <section className="card settings-card">
         <SegmentedControl<ThemeSetting>
           legend="Theme"
           name="theme"
@@ -72,7 +74,27 @@ export function SettingsPage({ settings, onChange }: SettingsPageProps) {
           {import.meta.env.DEV && <SampleDataButton />}
         </fieldset>
       </section>
+
+      <section className="card settings-card">
+        <GoogleSettings />
+      </section>
     </div>
+  );
+}
+
+/** Connects the Google section to main. */
+function GoogleSettings() {
+  const google = useGoogle();
+  if (!google.status) return null;
+  return (
+    <GoogleSection
+      status={google.status}
+      busy={google.busy}
+      onConnect={google.connect}
+      onCancel={google.cancel}
+      onDisconnect={google.disconnect}
+      onTest={import.meta.env.DEV ? () => window.api.google.testConnection() : undefined}
+    />
   );
 }
 

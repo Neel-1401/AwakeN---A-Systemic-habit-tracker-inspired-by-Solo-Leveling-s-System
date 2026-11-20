@@ -226,7 +226,7 @@ export function EventDialog({ initial, event, onClose, onSave, onDelete }: Event
               );
             })}
           </div>
-          <span className="field__hint">Sent by Google Calendar once it’s connected (Phase 5).</span>
+          <span className="field__hint">Sent by Google Calendar once events sync (Phase 6).</span>
         </fieldset>
 
         <label className="field">
