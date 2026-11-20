@@ -15,7 +15,7 @@ Everything is stored locally in SQLite. There's no account and no server.
 
 ## Where it's at
 
-Early. I'm building it in phases. The first four are done; Google Calendar sync is next.
+Early. I'm building it in phases. The first five are done; pushing events to Google Calendar is next.
 
 - [x] **1. Foundation**: Electron + React + TypeScript, the SQLite schema, and IPC between the
       window and the database
@@ -33,7 +33,8 @@ Early. I'm building it in phases. The first four are done; Google Calendar sync 
         per-day ticks for repeating tasks
   - [x] 4b. Week and Day views and the event dialog
   - [x] 4c. Month view, keyboard shortcuts, sample data for development, empty state
-- [ ] 5. Google sign-in
+- [x] **5. Google sign-in**: connect and disconnect in Settings, the sign-in kept encrypted on
+      this computer, a clear "sign-in expired" state with Reconnect. No events are synced yet.
 - [ ] 6. Push events to Google Calendar
 - [ ] 7. Pull changes back from Google, offline queue
 - [ ] 8. Polish and installers
@@ -50,7 +51,7 @@ add an event there, click an item to edit or delete it. In Month, click a date (
 keys and Enter) to open that day. Tasks get a tick box. Repeats can be every
 day, every week or every weekday; a repeat set somewhere else (say, monthly in Google Calendar)
 is kept as it is when you edit the event. Reminders are saved with each event but nothing sends
-them until Google Calendar is connected in Phase 5.
+them until events sync to Google Calendar in Phase 6.
 
 Keyboard shortcuts on the Calendar page: `T` today, `J`/`K` (or ←/→) next and previous, `D` `W`
 `M` to switch views, `N` for a new event. They're ignored while you're typing or a dialog is open.
@@ -60,6 +61,14 @@ If a habit has a reminder time and isn't done by then, a quiet desktop notificat
 
 Settings has the theme (system, light, dark), which day the week starts on, and a switch for
 reminder notifications.
+
+Settings also has a **Google Calendar** section. **Connect Google Calendar** opens Google's
+sign-in page in your normal browser; once you allow access, the tab says you can close it and
+Settings shows the connected account. **Disconnect** revokes AwakeN's access with Google and
+forgets the sign-in. Your events in AwakeN stay as they are. If Google stops accepting the
+sign-in (you removed access, or the Google project is in Testing mode, where sign-ins expire
+after about 7 days), Settings says "Google sign-in expired" and offers **Reconnect**. Nothing is
+synced yet; that's Phase 6.
 
 ## Running it
 
@@ -73,6 +82,28 @@ npm run dev
 In development, Settings has an **Add sample data** button. It fills an *empty* database with
 four habits (about four months of ticks) and a week of events and tasks, and refuses if any
 habit or event already exists. It isn't in packaged builds.
+
+### Google sign-in setup
+
+Google sign-in needs your own OAuth client from Google Cloud Console (a **Desktop app** client,
+with the Google Calendar API enabled and yourself added as a test user). Copy `.env.example` to
+`.env` and fill in the two values:
+
+```
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
+```
+
+`.env` is git-ignored. Restart `npm run dev` after changing it. Without it, Settings says sign-in
+isn't set up and everything else works as normal.
+
+How it works: AwakeN opens the sign-in page with PKCE (S256) and a random `state`, and waits for
+Google's reply on a one-off server at `http://127.0.0.1:<random port>`. That server stops after
+one reply, after 5 minutes, or when you press Cancel. It asks for `openid` and `email` (only to
+show which account is connected) and `calendar.events`, nothing else. The refresh token is
+encrypted with Electron's `safeStorage` (Windows DPAPI) in `google-account.bin` next to the
+database, never in SQLite or the window. The access token is kept in memory only. In
+development, Settings also has a **Test connection** button that reads your next event.
 
 Other scripts:
 
@@ -109,4 +140,4 @@ in `src/shared/ipc.ts` from one map of channels to arguments and results. The ma
 checks every argument (`src/main/validation.ts`) before it reaches SQLite. I kept `src/core` free of Electron and React so I can reuse it if I ever
 build a phone version.
 
-Built with Electron, Vite, React, TypeScript, better-sqlite3 and Vitest.
+Built with Electron, Vite, React, TypeScript, better-sqlite3, google-auth-library and Vitest.
