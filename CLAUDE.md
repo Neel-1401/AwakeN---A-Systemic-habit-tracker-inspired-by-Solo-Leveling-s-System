@@ -120,6 +120,8 @@ Notes, XP/levels/ranks, AI assistant, accounts or cloud backend, multi-user, mob
   install-app-deps`), run it as an explicit script instead, or revisit this setting.
 - Habit reminders use Electron desktop notifications (decided in Phase 3); calendar event
   reminders still come from Google Calendar.
+- Using google-auth-library instead of googleapis (0.8 MB vs 246 MB); Calendar calls
+  go through client.request() with our own small types. (Decided in Phase 5, 2026-11-20.)
 - Tray icon and launch-at-login are deferred to Phase 8. Until then, closing the window quits
   the app and habit reminders stop.
 
