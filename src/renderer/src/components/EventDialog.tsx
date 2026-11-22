@@ -5,6 +5,7 @@ import type { CalendarEvent } from '../../../core/types';
 import type { EventInput } from '../../../shared/ipc';
 import { errorMessage } from '../lib/format';
 import { SegmentedControl } from './SegmentedControl';
+import { WarningIcon } from './SyncStatus';
 import './HabitDialog.css';
 import './EventDialog.css';
 
@@ -104,6 +105,13 @@ export function EventDialog({ initial, event, onClose, onSave, onDelete }: Event
         <h2 id="event-dialog-title" className="habit-dialog__title">
           {event ? `Edit ${noun}` : `New ${noun}`}
         </h2>
+
+        {event?.syncState === 'error' && (
+          <p className="event-dialog__sync-error">
+            <WarningIcon />
+            <span>Didn’t sync to Google Calendar. {event.syncError} Saving tries again.</span>
+          </p>
+        )}
 
         <label className="field">
           <span className="field__label">Title</span>
@@ -226,7 +234,7 @@ export function EventDialog({ initial, event, onClose, onSave, onDelete }: Event
               );
             })}
           </div>
-          <span className="field__hint">Sent by Google Calendar once events sync (Phase 6).</span>
+          <span className="field__hint">Google Calendar sends these to your phone once the event syncs.</span>
         </fieldset>
 
         <label className="field">

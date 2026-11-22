@@ -12,14 +12,36 @@ interface GoogleSectionProps {
   onDisconnect(): void;
   /** Development builds only: the "Test connection" button, shown while connected. */
   onTest?: () => Promise<GoogleTestResult>;
+  /** Events only in AwakeN, and the button that uploads them (shown while connected). */
+  localOnly?: number;
+  onUpload?: () => void;
 }
 
 /** Settings → Google Calendar. Only shows what main reports; no tokens ever reach here. */
-export function GoogleSection({ status, busy = false, onConnect, onCancel, onDisconnect, onTest }: GoogleSectionProps) {
+export function GoogleSection({
+  status,
+  busy = false,
+  onConnect,
+  onCancel,
+  onDisconnect,
+  onTest,
+  localOnly = 0,
+  onUpload,
+}: GoogleSectionProps) {
   return (
     <fieldset className="settings-field google-section">
       <legend className="segmented__legend">Google Calendar</legend>
       <GoogleState status={status} busy={busy} onConnect={onConnect} onCancel={onCancel} onDisconnect={onDisconnect} />
+      {status.state === 'connected' && localOnly > 0 && onUpload && (
+        <p className="settings-test">
+          <button type="button" className="button" onClick={onUpload}>
+            Upload to Google
+          </button>
+          <span className="muted">
+            {localOnly === 1 ? '1 event is' : `${localOnly} events are`} only in AwakeN.
+          </span>
+        </p>
+      )}
       {status.state === 'connected' && onTest && <TestConnectionButton onTest={onTest} />}
       {status.notice && (
         <p className="settings-hint google-section__notice" role="status">
@@ -30,7 +52,9 @@ export function GoogleSection({ status, busy = false, onConnect, onCancel, onDis
   );
 }
 
-function GoogleState({ status, busy, onConnect, onCancel, onDisconnect }: Required<Omit<GoogleSectionProps, 'onTest'>>) {
+type StateProps = Required<Pick<GoogleSectionProps, 'status' | 'busy' | 'onConnect' | 'onCancel' | 'onDisconnect'>>;
+
+function GoogleState({ status, busy, onConnect, onCancel, onDisconnect }: StateProps) {
   switch (status.state) {
     case 'not-configured':
       return (
@@ -74,7 +98,10 @@ function GoogleState({ status, busy, onConnect, onCancel, onDisconnect }: Requir
           <p className="google-section__account">
             Connected as <strong>{status.email}</strong>
           </p>
-          <p className="muted settings-hint">Event syncing comes in the next update (Phase 6).</p>
+          <p className="muted settings-hint">
+            New and changed events go to your primary calendar, with their reminders, so Google can notify your
+            phone. Changes made in Google don’t come back to AwakeN yet.
+          </p>
           <div className="google-section__actions">
             <button type="button" className="button" disabled={busy} onClick={onDisconnect}>
               {busy ? 'Disconnecting…' : 'Disconnect'}

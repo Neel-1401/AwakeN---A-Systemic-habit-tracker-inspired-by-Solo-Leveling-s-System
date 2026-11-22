@@ -60,3 +60,19 @@ select.input {
   color: var(--bg);
   font-weight: 500;
 }
+
+.event-dialog__sync-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--danger);
+  border-radius: var(--radius-card);
+  background: var(--danger-tint);
+  font-size: var(--text-sm);
+}
+
+.event-dialog__sync-error .sync-warning {
+  margin-top: 2px;
+}

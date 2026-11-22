@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { WeekStartsOn } from '../../../core/dates';
 import type { AppSettings, ThemeSetting } from '../../../shared/ipc';
 import { useGoogle } from '../hooks/useGoogle';
+import { useSyncStatus } from '../hooks/useSyncStatus';
 import { errorMessage } from '../lib/format';
 import { GoogleSection } from './GoogleSection';
 import { SegmentedControl } from './SegmentedControl';
@@ -85,6 +86,7 @@ export function SettingsPage({ settings, onChange }: SettingsPageProps) {
 /** Connects the Google section to main. */
 function GoogleSettings() {
   const google = useGoogle();
+  const sync = useSyncStatus();
   if (!google.status) return null;
   return (
     <GoogleSection
@@ -94,6 +96,8 @@ function GoogleSettings() {
       onCancel={google.cancel}
       onDisconnect={google.disconnect}
       onTest={import.meta.env.DEV ? () => window.api.google.testConnection() : undefined}
+      localOnly={sync?.localOnly ?? 0}
+      onUpload={() => void window.api.sync.uploadLocal().catch(() => {})}
     />
   );
 }

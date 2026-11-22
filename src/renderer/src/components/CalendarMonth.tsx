@@ -4,7 +4,7 @@ import { groupByDay } from '../../../core/calendar';
 import { parseDay } from '../../../core/dates';
 import type { EventOccurrenceDto } from '../../../shared/ipc';
 import { useRovingGrid } from '../hooks/useRovingGrid';
-import { clockTime, occurrenceKey, occurrenceLabel, TaskCheck } from './CalendarItem';
+import { clockTime, occurrenceKey, occurrenceLabel, SyncFailedMark, TaskCheck } from './CalendarItem';
 import './CalendarMonth.css';
 
 /** Items shown in a day before the rest fold into "+N more". */
@@ -106,6 +106,7 @@ export function CalendarMonth({
                     {o.event.kind === 'task' && (
                       <TaskCheck occurrence={o} tabIndex={-1} onToggle={() => onToggleTask(o)} />
                     )}
+                    <SyncFailedMark occurrence={o} />
                     <button
                       type="button"
                       className="cal-month__open"

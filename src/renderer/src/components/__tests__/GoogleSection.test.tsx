@@ -52,4 +52,19 @@ describe('GoogleSection (Settings → Google Calendar)', () => {
     expect(buttons(render({ state: 'connected', email: 'a@b.c' }, { onTest }))).toContain('Test connection');
     expect(buttons(render({ state: 'not-connected' }, { onTest }))).not.toContain('Test connection');
   });
+
+  it('connected with local-only events: offers to upload them', () => {
+    const html = renderToStaticMarkup(
+      <GoogleSection
+        status={{ state: 'connected', email: 'me@example.com' }}
+        onConnect={noop}
+        onCancel={noop}
+        onDisconnect={noop}
+        localOnly={3}
+        onUpload={noop}
+      />,
+    );
+    expect(buttons(html)).toEqual(['Disconnect', 'Upload to Google']);
+    expect(html).toContain('3 events are only in AwakeN.');
+  });
 });

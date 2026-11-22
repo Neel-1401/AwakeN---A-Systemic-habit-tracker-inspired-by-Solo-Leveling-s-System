@@ -8,10 +8,12 @@ import type { EventOccurrenceDto } from '../../../shared/ipc';
 import { useEvents } from '../hooks/useEvents';
 import { useNow } from '../hooks/useNow';
 import { useShortcuts } from '../hooks/useShortcuts';
+import { useSyncStatus } from '../hooks/useSyncStatus';
 import { errorMessage } from '../lib/format';
 import { CalendarMonth } from './CalendarMonth';
 import { EventDialog } from './EventDialog';
 import { PeriodToolbar } from './PeriodToolbar';
+import { FailedSyncDialog, SyncIndicator } from './SyncStatus';
 import { panelId, tabId, Tabs } from './Tabs';
 import { TimeGrid } from './TimeGrid';
 
@@ -31,6 +33,8 @@ type DialogState = null | { form: EventForm; event?: CalendarEvent; opened: numb
 
 interface CalendarPageProps {
   weekStartsOn: WeekStartsOn;
+  /** "Needs reconnect" in the sync status goes to Settings. */
+  onOpenSettings(): void;
 }
 
 /** "9 – 15 November 2026", "30 Nov – 6 Dec 2026" or "28 Dec 2026 – 3 Jan 2027". */
@@ -40,7 +44,7 @@ function weekLabel(first: Date, last: Date): string {
   return `${format(first, 'd MMM yyyy')} – ${format(last, 'd MMM yyyy')}`;
 }
 
-export function CalendarPage({ weekStartsOn }: CalendarPageProps) {
+export function CalendarPage({ weekStartsOn, onOpenSettings }: CalendarPageProps) {
   const now = useNow();
   const today = toDay(now);
   const [view, setView] = useState<CalendarView>('week');
@@ -48,6 +52,8 @@ export function CalendarPage({ weekStartsOn }: CalendarPageProps) {
   const [anchor, setAnchor] = useState(today);
   const [dialog, setDialog] = useState<DialogState>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showFailed, setShowFailed] = useState(false);
+  const sync = useSyncStatus();
   const open = (form: EventForm, event?: CalendarEvent) => setDialog({ form, event, opened: Date.now() });
 
   const anchorDate = parseDay(anchor);
@@ -124,9 +130,19 @@ export function CalendarPage({ weekStartsOn }: CalendarPageProps) {
 
       <div className="page-bar">
         <Tabs<CalendarView> idPrefix="calendar" label="Calendar views" tabs={VIEW_TABS} value={view} onChange={setView} />
-        <button type="button" className="button button--primary" aria-keyshortcuts="N" onClick={newEvent}>
-          New event
-        </button>
+        <div className="page-bar__actions">
+          {sync && (
+            <SyncIndicator
+              status={sync}
+              now={now}
+              onShowFailed={() => setShowFailed(true)}
+              onOpenSettings={onOpenSettings}
+            />
+          )}
+          <button type="button" className="button button--primary" aria-keyshortcuts="N" onClick={newEvent}>
+            New event
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -188,6 +204,8 @@ export function CalendarPage({ weekStartsOn }: CalendarPageProps) {
           />
         )}
       </div>
+
+      {showFailed && sync && <FailedSyncDialog status={sync} onClose={() => setShowFailed(false)} />}
 
       {dialog && (
         <EventDialog

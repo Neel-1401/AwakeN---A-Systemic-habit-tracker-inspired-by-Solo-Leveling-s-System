@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, type CSSProperties, type MouseEvent } from 
 import { layoutDay } from '../../../core/calendar';
 import { parseDay } from '../../../core/dates';
 import type { EventOccurrenceDto } from '../../../shared/ipc';
-import { clockTime, occurrenceKey as keyOf, occurrenceLabel as itemLabel, TaskCheck } from './CalendarItem';
+import { clockTime, occurrenceKey as keyOf, occurrenceLabel as itemLabel, SyncFailedMark, TaskCheck } from './CalendarItem';
 import './TimeGrid.css';
 
 /** Height of one hour in pixels. Half-hour clicks snap to HOUR_PX / 2. */
@@ -127,6 +127,7 @@ export function TimeGrid({
                 className={`cal-chip${o.event.kind === 'task' ? ' cal-chip--task' : ''}${o.done ? ' is-done' : ''}`}
               >
                 {o.event.kind === 'task' && <TaskCheck occurrence={o} onToggle={() => onToggleTask(o)} />}
+                <SyncFailedMark occurrence={o} />
                 <button type="button" className="cal-open" aria-label={itemLabel(o)} onClick={() => onOpen(o)}>
                   {o.event.title}
                 </button>
@@ -167,6 +168,7 @@ export function TimeGrid({
                     }}
                   >
                     {o.event.kind === 'task' && <TaskCheck occurrence={o} onToggle={() => onToggleTask(o)} />}
+                    <SyncFailedMark occurrence={o} />
                     <button type="button" className="cal-open" aria-label={itemLabel(o)} onClick={() => onOpen(o)}>
                       <span className="cal-item__title">{o.event.title}</span>
                       <span className="cal-item__time">{clockTime(o.startAt)}</span>

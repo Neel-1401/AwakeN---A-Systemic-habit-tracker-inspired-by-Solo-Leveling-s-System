@@ -1,6 +1,7 @@
 import { format, parseISO } from 'date-fns';
 import type { EventOccurrenceDto } from '../../../shared/ipc';
 import { formatTime } from '../lib/format';
+import { WarningIcon } from './SyncStatus';
 import './CalendarItem.css';
 
 /** A unique key for one occurrence (a repeating event has many with the same id). */
@@ -15,7 +16,14 @@ export function occurrenceLabel(o: EventOccurrenceDto): string {
   if (o.event.kind === 'task') parts.push(o.done ? 'task, done' : 'task');
   parts.push(o.event.allDay ? 'all day' : `${clockTime(o.startAt)} to ${clockTime(o.endAt)}`);
   if (o.event.recurrenceRule) parts.push('repeats');
+  if (o.event.syncState === 'error') parts.push('didn’t sync to Google Calendar');
   return parts.join(', ');
+}
+
+/** The warning triangle on an item Google refused. The reason shows on hover. */
+export function SyncFailedMark({ occurrence }: { occurrence: EventOccurrenceDto }) {
+  if (occurrence.event.syncState !== 'error') return null;
+  return <WarningIcon title={occurrence.event.syncError ?? 'Didn’t sync to Google Calendar'} />;
 }
 
 interface TaskCheckProps {

@@ -13,12 +13,15 @@ export interface EventsData {
 
 /**
  * Calendar items between two days (inclusive) plus the actions that change them.
- * Like useHabits, every action bumps `version`, which reloads the range.
+ * Like useHabits, every action bumps `version`, which reloads the range. So does every sync
+ * update from main, so warning icons appear and clear as the push queue works.
  */
 export function useEvents(fromDay: string, toDay: string): EventsData {
   const key = `${fromDay}|${toDay}`;
   const [version, setVersion] = useState(0);
   const [loaded, setLoaded] = useState<{ key: string; occurrences: EventOccurrenceDto[] } | null>(null);
+
+  useEffect(() => window.api.events.onSyncStatus(() => setVersion((v) => v + 1)), []);
 
   useEffect(() => {
     let current = true;
