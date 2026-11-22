@@ -1,10 +1,11 @@
 import path from 'node:path';
-import { app, BrowserWindow, nativeTheme, safeStorage, shell } from 'electron';
+import { app, BrowserWindow, nativeTheme, net, powerMonitor, safeStorage, shell } from 'electron';
 import { MainEvents } from '../shared/ipc';
 import { openDatabase } from './db';
 import { getAppSettings } from './db/repositories/settings';
 import { loadGoogleConfig } from './google/config';
 import { GoogleAuth } from './google/googleAuth';
+import { PushQueue } from './google/pushQueue';
 import { createTokenStore } from './google/tokenStore';
 import { registerIpcHandlers } from './ipc';
 import { showNotification, startReminderScheduler } from './reminderScheduler';
@@ -63,16 +64,30 @@ app.whenReady().then(() => {
 
   // Apply the saved theme before the window opens.
   nativeTheme.themeSource = getAppSettings(db).theme;
+  // Created below; GoogleAuth tells it about connection changes from the start.
+  let sync: PushQueue | null = null;
   const google = new GoogleAuth({
     // Development: the project folder's .env. Packaged builds are sorted out in Phase 8.
     config: loadGoogleConfig(path.join(app.getAppPath(), '.env')),
     // Encrypted with safeStorage, next to the database but never inside it.
     store: createTokenStore(path.join(app.getPath('userData'), 'google-account.bin'), safeStorage),
     openExternal: (url) => shell.openExternal(url),
-    onStatus: (status) => mainWindow?.webContents.send(MainEvents.googleStatus, status),
+    onStatus: (status) => {
+      mainWindow?.webContents.send(MainEvents.googleStatus, status);
+      sync?.connectionChanged();
+    },
   });
 
-  registerIpcHandlers(db, google, {
+  sync = new PushQueue({
+    db,
+    transport: google,
+    connection: () => (google.isConnected() ? 'on' : google.hasAccount() ? 'needs-reconnect' : 'off'),
+    isOnline: () => net.isOnline(),
+    onStatus: (status) => mainWindow?.webContents.send(MainEvents.syncStatus, status),
+  });
+  const queue = sync;
+
+  registerIpcHandlers(db, google, queue, {
     devSeed: !app.isPackaged,
     googleTest: !app.isPackaged,
     testReminder: app.isPackaged
@@ -83,7 +98,10 @@ app.whenReady().then(() => {
   createWindow();
   startReminderScheduler(db, showToday);
   // Finds out early if Google has dropped the sign-in; Settings then shows "Reconnect".
-  void google.verifyStoredSignIn();
+  // Then pushes anything still waiting from last time, and every 2 minutes after.
+  void google.verifyStoredSignIn().finally(() => queue.start());
+  // Timers don't run while the computer sleeps, and the network is often back on waking.
+  powerMonitor.on('resume', () => void queue.run());
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

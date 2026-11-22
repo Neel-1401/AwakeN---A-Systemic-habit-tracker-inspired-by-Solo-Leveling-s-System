@@ -1,12 +1,12 @@
 import { CodeChallengeMethod, OAuth2Client } from 'google-auth-library';
 import type { GoogleStatus, GoogleTestResult } from '../../shared/ipc';
+import { EVENTS_URL, type CalendarReply, type CalendarRequest, type CalendarTransport } from './calendarApi';
 import type { GoogleClientConfig } from './config';
 import { CALENDAR_SCOPE, createAuthRequest, GOOGLE_SCOPES, startLoopback, type Loopback, type SignInOutcome } from './oauth';
 import { SecureStorageError, type StoredGoogleAccount, type TokenStore } from './tokenStore';
 
 /** Every call to Google gives up after this long, so nothing waits forever when offline. */
 const REQUEST_TIMEOUT_MS = 15_000;
-const EVENTS_URL = 'https://www.googleapis.com/calendar/v3/calendars/primary/events';
 
 /** The parts of OAuth2Client this uses. Tests pass a fake. */
 export type GoogleClient = Pick<
@@ -53,7 +53,7 @@ export function createOAuthClient({ clientId, clientSecret }: GoogleClientConfig
  * file) and the client; the access token lives only in the client's memory and is refreshed by the
  * library when it expires. Nothing here returns or logs a token.
  */
-export class GoogleAuth {
+export class GoogleAuth implements CalendarTransport {
   private readonly client: GoogleClient | null;
   private account: StoredGoogleAccount | null;
   private attempt: Attempt | null = null;
@@ -134,6 +134,64 @@ export class GoogleAuth {
         'Disconnected here, but Google couldn’t be reached to revoke access. You can remove AwakeN at myaccount.google.com/permissions.';
     }
     return this.emit(this.statusWith(notice));
+  }
+
+  /**
+   * True while an account is linked, even if its sign-in expired: local changes are then queued
+   * for Google ('pending') and go up after reconnecting. False when never connected or disconnected.
+   */
+  hasAccount(): boolean {
+    return Boolean(this.client && this.account);
+  }
+
+  /** Calendar requests go out only when this is true. */
+  isConnected(): boolean {
+    return Boolean(this.client && this.account?.refreshToken);
+  }
+
+  /**
+   * One Calendar API request for the push queue. Every HTTP status comes back as a response
+   * (validateStatus accepts them all), so 401 and 412 are the queue's to handle, and the library
+   * doesn't retry on its own. Errors never escape: their request options include our headers.
+   */
+  async send({ method, url, data, headers }: CalendarRequest): Promise<CalendarReply> {
+    const client = this.client;
+    const refreshToken = this.account?.refreshToken;
+    if (!client || !refreshToken) return { kind: 'signed-out' };
+    try {
+      const response = await client.request({ method, url, data, headers, validateStatus: () => true });
+      return { kind: 'response', status: response.status, data: response.data };
+    } catch (error) {
+      // Getting an access token failed: Google refused the refresh token, or wasn't reachable.
+      if (isInvalidGrant(error)) {
+        this.markNeedsReconnect(refreshToken);
+        return { kind: 'signed-out' };
+      }
+      return { kind: 'offline' };
+    }
+  }
+
+  async refreshAccess(): Promise<'ok' | 'offline' | 'signed-out'> {
+    const client = this.client;
+    const refreshToken = this.account?.refreshToken;
+    if (!client || !refreshToken) return 'signed-out';
+    // Without an access token the client has to ask Google for a new one.
+    client.setCredentials({ refresh_token: refreshToken });
+    try {
+      await client.getAccessToken();
+      return 'ok';
+    } catch (error) {
+      if (isInvalidGrant(error)) {
+        this.markNeedsReconnect(refreshToken);
+        return 'signed-out';
+      }
+      return 'offline';
+    }
+  }
+
+  rejectSignIn(): void {
+    const refreshToken = this.account?.refreshToken;
+    if (refreshToken) this.markNeedsReconnect(refreshToken);
   }
 
   /** At start-up: checks the stored sign-in still works. Being offline is fine; only a refusal counts. */

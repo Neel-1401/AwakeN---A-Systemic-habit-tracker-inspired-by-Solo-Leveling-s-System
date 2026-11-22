@@ -224,4 +224,59 @@ describe('GoogleAuth', () => {
     expect(status.notice).not.toContain('eyJ');
     expect(status.state).toBe('not-connected');
   });
+
+  describe('as the push queue’s transport', () => {
+    const connected = () => setup({ stored: { email: 'me@example.com', refreshToken: REFRESH } });
+    const insert = { method: 'POST' as const, url: 'https://www.googleapis.com/calendar/v3/calendars/primary/events' };
+
+    it('returns every HTTP status as a response instead of throwing', async () => {
+      const { auth, client } = connected();
+      client.request.mockResolvedValueOnce({ status: 412, data: { error: { message: 'Precondition Failed' } } });
+      await expect(auth.send(insert)).resolves.toEqual({
+        kind: 'response',
+        status: 412,
+        data: { error: { message: 'Precondition Failed' } },
+      });
+      const options = (client.request.mock.calls[0] as unknown as [{ validateStatus(status: number): boolean }])[0];
+      expect(options.validateStatus(401)).toBe(true);
+    });
+
+    it('no answer is offline; a refused sign-in is signed-out and needs reconnect', async () => {
+      const { auth, client } = connected();
+      client.request.mockRejectedValueOnce(offline());
+      await expect(auth.send(insert)).resolves.toEqual({ kind: 'offline' });
+      expect(auth.getStatus().state).toBe('connected');
+
+      client.request.mockRejectedValueOnce(invalidGrant());
+      await expect(auth.send(insert)).resolves.toEqual({ kind: 'signed-out' });
+      expect(auth.getStatus().state).toBe('needs-reconnect');
+      expect(auth.hasAccount()).toBe(true);
+      expect(auth.isConnected()).toBe(false);
+    });
+
+    it('refreshAccess drops the access token and asks for a new one', async () => {
+      const { auth, client } = connected();
+      client.setCredentials({ refresh_token: REFRESH, access_token: ACCESS });
+      await expect(auth.refreshAccess()).resolves.toBe('ok');
+      expect(client.credentials).toEqual({ refresh_token: REFRESH });
+      expect(client.getAccessToken).toHaveBeenCalled();
+
+      client.getAccessToken.mockRejectedValueOnce(invalidGrant());
+      await expect(auth.refreshAccess()).resolves.toBe('signed-out');
+      expect(auth.getStatus().state).toBe('needs-reconnect');
+    });
+
+    it('rejectSignIn: Settings asks to reconnect', () => {
+      const { auth } = connected();
+      auth.rejectSignIn();
+      expect(auth.getStatus()).toEqual({ state: 'needs-reconnect', email: 'me@example.com' });
+    });
+
+    it('not connected: nothing is sent', async () => {
+      const { auth, client } = setup();
+      await expect(auth.send(insert)).resolves.toEqual({ kind: 'signed-out' });
+      expect(client.request).not.toHaveBeenCalled();
+      expect(auth.hasAccount()).toBe(false);
+    });
+  });
 });

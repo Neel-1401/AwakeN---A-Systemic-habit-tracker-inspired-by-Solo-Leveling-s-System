@@ -19,8 +19,11 @@ import {
 } from './db/repositories/habits';
 import { getAppSettings, updateAppSettings } from './db/repositories/settings';
 import { seedSampleData } from './devSeed';
+import { listFailed } from './db/repositories/eventSync';
 import type { GoogleAuth } from './google/googleAuth';
+import type { PushQueue } from './google/pushQueue';
 import {
+  parseBoolean,
   parseDayKey,
   parseDayRange,
   parseEventInput,
@@ -52,7 +55,12 @@ interface IpcOptions {
   googleTest?: boolean;
 }
 
-export function registerIpcHandlers(db: Database.Database, google: GoogleAuth, options: IpcOptions = {}): void {
+export function registerIpcHandlers(
+  db: Database.Database,
+  google: GoogleAuth,
+  sync: PushQueue,
+  options: IpcOptions = {}
+): void {
   if (options.testReminder) {
     const testReminder = options.testReminder;
     handle('reminders:test', () => testReminder());
@@ -69,18 +77,41 @@ export function registerIpcHandlers(db: Database.Database, google: GoogleAuth, o
   );
   handle('habits:getLogs', (from, to) => getLogs(db, ...parseDayRange(from, to)));
   handle('events:listInRange', (from, to) => listEventsInRange(db, ...parseEventRange(from, to)));
-  handle('events:create', (input) => createEvent(db, parseEventInput(input)));
-  handle('events:update', (id, input) => updateEvent(db, parseId(id), parseEventInput(input)));
-  handle('events:delete', (id) => deleteEvent(db, parseId(id)));
+  // Each change is saved as 'pending' while a Google account is linked, then pushed soon after.
+  handle('events:create', (input) => {
+    const event = createEvent(db, parseEventInput(input), new Date(), google.hasAccount());
+    sync.kick();
+    return event;
+  });
+  handle('events:update', (id, input) => {
+    const event = updateEvent(db, parseId(id), parseEventInput(input), new Date(), google.hasAccount());
+    sync.kick();
+    return event;
+  });
+  handle('events:delete', (id) => {
+    deleteEvent(db, parseId(id), new Date(), google.hasAccount());
+    sync.kick();
+  });
   handle('events:toggleTaskDone', (id, day) =>
     toggleTaskDone(db, parseId(id), day === undefined || day === null ? undefined : parseDayKey(day))
   );
   // No arguments to check: the renderer can only ask, and nothing returned contains a token.
   handle('google:getStatus', () => google.getStatus());
-  handle('google:connect', () => google.connect());
+  handle('google:connect', async () => {
+    // Reconnecting after an expired sign-in keeps syncing as before; a new connection asks first.
+    const wasLinked = google.hasAccount();
+    const status = await google.connect();
+    if (status.state === 'connected' && !wasLinked) sync.offerUpload();
+    return status;
+  });
   handle('google:cancelConnect', () => google.cancelConnect());
   handle('google:disconnect', () => google.disconnect());
   if (options.googleTest) handle('google:testConnection', () => google.testConnection());
+  handle('sync:getStatus', () => sync.getStatus());
+  handle('sync:listFailed', () => listFailed(db));
+  handle('sync:retry', (id) => sync.retry(parseId(id)));
+  handle('sync:answerUpload', (upload) => sync.answerUpload(parseBoolean(upload)));
+  handle('sync:uploadLocal', () => sync.uploadLocal());
   handle('settings:get', () => getAppSettings(db));
   handle('settings:update', (changes) => {
     const parsed = parseSettingsChanges(changes);

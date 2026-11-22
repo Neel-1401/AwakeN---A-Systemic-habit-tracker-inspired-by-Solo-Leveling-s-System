@@ -33,7 +33,7 @@ export interface EventInput {
    * rule the app can't edit never drops its repeats.
    */
   repeat: RepeatChoice | null;
-  /** Minutes before the start. Sent to Google as popup reminders in Phase 6. */
+  /** Minutes before the start. Sent to Google as popup reminders. */
   reminderMinutes: number[];
 }
 
@@ -82,6 +82,39 @@ export type GoogleStatus = {
 );
 
 export type GoogleState = GoogleStatus['state'];
+
+/**
+ * Pushing events to Google, as the Calendar toolbar and Settings show it.
+ * Built in main from the database and the push queue; contains no event contents.
+ */
+export interface SyncStatus {
+  /** 'off': Google isn't connected, nothing syncs. 'needs-reconnect': paused until you reconnect. */
+  connection: 'off' | 'on' | 'needs-reconnect';
+  /** Changes (including deletes) waiting to reach Google. */
+  pending: number;
+  /** Events Google refused; each has an error message (see sync:listFailed). */
+  failed: number;
+  /** When everything waiting last reached Google. ISO, or null if never. */
+  lastSyncedAt: string | null;
+  /** The last try couldn't reach Google. Changes wait and go when it's back. */
+  offline: boolean;
+  /** Just connected with this many existing events: ask whether to upload them. */
+  uploadOffer: number | null;
+  /** Events only in AwakeN (made before connecting, or "Not now"). */
+  localOnly: number;
+}
+
+/** One event that failed to sync, for the list behind "1 event failed to sync". */
+export interface FailedSyncItem {
+  id: string;
+  title: string;
+  /** Timed: UTC ISO. All-day: day key. */
+  startAt: string;
+  allDay: boolean;
+  /** Deleted in AwakeN, but Google refused the delete. */
+  deleted: boolean;
+  error: string;
+}
 
 /** Result of the dev-only "Test connection" button. */
 export interface GoogleTestResult {
@@ -132,6 +165,14 @@ export interface IpcContract {
   'google:disconnect': { args: []; result: GoogleStatus };
   /** Development builds only: lists one upcoming event from the primary calendar. */
   'google:testConnection': { args: []; result: GoogleTestResult };
+  'sync:getStatus': { args: []; result: SyncStatus };
+  'sync:listFailed': { args: []; result: FailedSyncItem[] };
+  /** Puts a failed event back in the queue and tries it straight away. */
+  'sync:retry': { args: [id: string]; result: void };
+  /** The answer to "Upload N existing events?": true uploads them, false leaves them local. */
+  'sync:answerUpload': { args: [upload: boolean]; result: void };
+  /** Settings: uploads every event that's only in AwakeN. Returns how many were queued. */
+  'sync:uploadLocal': { args: []; result: number };
 }
 
 /** Messages main sends to the window (the other direction from IpcContract). */
@@ -140,6 +181,8 @@ export const MainEvents = {
   showToday: 'app:showToday',
   /** The Google connection changed (sent with the new GoogleStatus). */
   googleStatus: 'google:status',
+  /** Push sync progressed: counts or an event's syncState changed (sent with the SyncStatus). */
+  syncStatus: 'sync:status',
 } as const;
 
 export type IpcChannel = keyof IpcContract;
@@ -183,10 +226,19 @@ export interface AwakenApi {
     /** Development builds only. */
     testConnection(): Promise<GoogleTestResult>;
   };
+  sync: {
+    getStatus(): Promise<SyncStatus>;
+    listFailed(): Promise<FailedSyncItem[]>;
+    retry(id: string): Promise<void>;
+    answerUpload(upload: boolean): Promise<void>;
+    uploadLocal(): Promise<number>;
+  };
   events: {
     /** Calls `listener` when main asks for the Today tab. Returns a function that unsubscribes. */
     onShowToday(listener: () => void): () => void;
     /** Calls `listener` whenever the Google connection changes. Returns an unsubscribe function. */
     onGoogleStatus(listener: (status: GoogleStatus) => void): () => void;
+    /** Calls `listener` whenever push sync changes something. Returns an unsubscribe function. */
+    onSyncStatus(listener: (status: SyncStatus) => void): () => void;
   };
 }

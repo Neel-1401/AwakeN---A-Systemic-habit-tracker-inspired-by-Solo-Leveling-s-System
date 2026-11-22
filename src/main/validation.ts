@@ -30,6 +30,11 @@ export function parseId(value: unknown): string {
   return value;
 }
 
+export function parseBoolean(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new ValidationError('Expected true or false');
+  return value;
+}
+
 export function parseDayKey(value: unknown): string {
   if (typeof value !== 'string') throw new ValidationError('Day must be YYYY-MM-DD');
   try {
