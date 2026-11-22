@@ -15,7 +15,7 @@ Everything is stored locally in SQLite. There's no account and no server.
 
 ## Where it's at
 
-Early. I'm building it in phases. The first five are done; pushing events to Google Calendar is next.
+Early. I'm building it in phases. The first six are done; pulling changes back from Google Calendar is next.
 
 - [x] **1. Foundation**: Electron + React + TypeScript, the SQLite schema, and IPC between the
       window and the database
@@ -35,8 +35,9 @@ Early. I'm building it in phases. The first five are done; pushing events to Goo
   - [x] 4c. Month view, keyboard shortcuts, sample data for development, empty state
 - [x] **5. Google sign-in**: connect and disconnect in Settings, the sign-in kept encrypted on
       this computer, a clear "sign-in expired" state with Reconnect. No events are synced yet.
-- [ ] 6. Push events to Google Calendar
-- [ ] 7. Pull changes back from Google, offline queue
+- [x] **6. Push events to Google Calendar**: new, changed and deleted events and tasks go to my
+      primary calendar with their reminders; works offline and catches up later
+- [ ] 7. Pull changes back from Google
 - [ ] 8. Polish and installers
 
 If you run it now, the Habits page has three tabs:
@@ -50,8 +51,8 @@ The **Calendar** page has Day, Week and Month views. Click an empty slot (or the
 add an event there, click an item to edit or delete it. In Month, click a date (or use the arrow
 keys and Enter) to open that day. Tasks get a tick box. Repeats can be every
 day, every week or every weekday; a repeat set somewhere else (say, monthly in Google Calendar)
-is kept as it is when you edit the event. Reminders are saved with each event but nothing sends
-them until events sync to Google Calendar in Phase 6.
+is kept as it is when you edit the event. Reminders are sent to Google Calendar with the event,
+and Google notifies my phone.
 
 Keyboard shortcuts on the Calendar page: `T` today, `J`/`K` (or ←/→) next and previous, `D` `W`
 `M` to switch views, `N` for a new event. They're ignored while you're typing or a dialog is open.
@@ -67,8 +68,34 @@ sign-in page in your normal browser; once you allow access, the tab says you can
 Settings shows the connected account. **Disconnect** revokes AwakeN's access with Google and
 forgets the sign-in. Your events in AwakeN stay as they are. If Google stops accepting the
 sign-in (you removed access, or the Google project is in Testing mode, where sign-ins expire
-after about 7 days), Settings says "Google sign-in expired" and offers **Reconnect**. Nothing is
-synced yet; that's Phase 6.
+after about 7 days), Settings says "Google sign-in expired" and offers **Reconnect**.
+
+### Syncing to Google Calendar
+
+While Google is connected, every event and task you create, edit or delete in AwakeN is sent to
+your **primary** Google calendar. It's one way for now: changes made in Google don't come back
+until Phase 7.
+
+- **What's sent**: title, description, start and end (timed events in the Asia/Kolkata time zone,
+  all-day events as dates), the repeat rule (including a custom one set in Google), and each
+  reminder as a popup notification instead of the calendar's default reminders (Google allows 5).
+  Tasks become normal Google events with a hidden `awakenKind = task` tag. Ticking a task off
+  only changes it in AwakeN for now.
+- **When**: a moment after each change, when the app starts, and every 2 minutes.
+- **Status**: the Calendar toolbar says "Synced 2 min ago", "3 changes waiting" or
+  "1 event failed to sync". Click the last one for the list of failed events, each with the
+  reason and a **Retry** button. Failed events also show a small warning triangle in every view.
+- **Offline**: everything keeps working. Changes wait and go up once the internet is back (it
+  retries after 15 s, 30 s, 1 min, then every 2 min).
+- **Safe by default**: AwakeN only changes or deletes a Google event if it's still the version
+  AwakeN last saw there. If you changed it in Google in the meantime, AwakeN leaves it alone and
+  marks the event as failed; Phase 7 will sort those out. A delete is kept in AwakeN's database
+  until Google confirms it.
+- **Connecting with events already in AwakeN**: it asks once, "Upload N existing events to
+  Google Calendar?" With **Not now** they stay on this computer; Settings has an **Upload to
+  Google** button for later. Nothing syncs while Google isn't connected.
+- If the sign-in expires, syncing pauses ("Needs reconnect" in the toolbar) and changes wait
+  until you reconnect.
 
 ## Running it
 
