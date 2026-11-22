@@ -127,4 +127,40 @@ describe('toggleTaskDone', () => {
     const event = createEvent(db, lecture, NOW);
     expect(() => toggleTaskDone(db, event.id, undefined, NOW)).toThrow('Only tasks');
   });
+
+  describe('sync state after a change', () => {
+    const linkToGoogle = (id: string) =>
+      db.prepare(`UPDATE events SET syncState = 'synced', googleEventId = 'g1', googleEtag = 'e1' WHERE id = ?`).run(id);
+
+    it('stays local while Google isn’t connected', () => {
+      const created = createEvent(db, lecture, NOW, false);
+      expect(created.syncState).toBe('local');
+      expect(updateEvent(db, created.id, { ...lecture, title: 'New' }, NOW, false).syncState).toBe('local');
+      deleteEvent(db, created.id, NOW, false);
+      expect(db.prepare('SELECT syncState FROM events WHERE id = ?').get(created.id)).toEqual({ syncState: 'local' });
+    });
+
+    it('every change is pending while connected, and a new edit clears an old error', () => {
+      const created = createEvent(db, lecture, NOW, true);
+      expect(created.syncState).toBe('pending');
+      db.prepare(`UPDATE events SET syncState = 'error', syncError = 'Nope' WHERE id = ?`).run(created.id);
+      expect(updateEvent(db, created.id, lecture, NOW, true)).toMatchObject({ syncState: 'pending', syncError: null });
+    });
+
+    it('an event already in Google is pending after an edit even when disconnected', () => {
+      const created = createEvent(db, lecture, NOW, false);
+      linkToGoogle(created.id);
+      expect(updateEvent(db, created.id, lecture, NOW, false).syncState).toBe('pending');
+    });
+
+    it('delete keeps the row (deletedAt) as pending until Google confirms', () => {
+      const created = createEvent(db, lecture, NOW, true);
+      linkToGoogle(created.id);
+      deleteEvent(db, created.id, NOW, true);
+      expect(db.prepare('SELECT syncState, deletedAt FROM events WHERE id = ?').get(created.id)).toEqual({
+        syncState: 'pending',
+        deletedAt: NOW.toISOString(),
+      });
+    });
+  });
 });

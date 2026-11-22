@@ -38,6 +38,8 @@ export interface CalendarEvent {
   googleEventId?: string | null;
   googleEtag?: string | null;
   syncState: 'local' | 'synced' | 'pending' | 'error';
+  /** Why the last push to Google failed. Only set while syncState is 'error'. */
+  syncError?: string | null;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

@@ -7,7 +7,7 @@ import { parseRecurrenceRule, RECURRENCE_RULES, repeatChoice } from '../../../co
 import type { CalendarEvent } from '../../../core/types';
 import type { EventInput, EventOccurrenceDto } from '../../../shared/ipc';
 
-interface EventRow {
+export interface EventRow {
   id: string;
   title: string;
   description: string | null;
@@ -21,6 +21,8 @@ interface EventRow {
   googleEventId: string | null;
   googleEtag: string | null;
   syncState: CalendarEvent['syncState'];
+  syncError: string | null;
+  changeSeq: number;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
@@ -35,8 +37,18 @@ function parseMinutes(json: string): number[] {
   }
 }
 
-function rowToEvent(row: EventRow): CalendarEvent {
+/** changeSeq is sync bookkeeping (see eventSync.ts), so it stays out of CalendarEvent. */
+export function rowToEvent({ changeSeq: _changeSeq, ...row }: EventRow): CalendarEvent {
   return { ...row, allDay: row.allDay === 1, reminderMinutes: parseMinutes(row.reminderMinutes) };
+}
+
+/**
+ * The sync state a local change leaves behind. 'pending' (the push queue sends it) when syncing
+ * is on, or when the event is already in Google, so an edit made while disconnected still goes
+ * up after reconnecting. Otherwise it stays 'local' and never leaves this computer.
+ */
+function stateAfterChange(syncEnabled: boolean, googleEventId: string | null | undefined): CalendarEvent['syncState'] {
+  return syncEnabled || googleEventId ? 'pending' : 'local';
 }
 
 /** recurrenceRule is decided by the caller, since 'custom' depends on what's stored. */
@@ -62,7 +74,13 @@ export function getEvent(db: Database.Database, id: string): CalendarEvent {
   return rowToEvent(row);
 }
 
-export function createEvent(db: Database.Database, input: EventInput, now = new Date()): CalendarEvent {
+/** syncEnabled: Google is connected, so the new event is queued for upload ('pending'). */
+export function createEvent(
+  db: Database.Database,
+  input: EventInput,
+  now = new Date(),
+  syncEnabled = false
+): CalendarEvent {
   if (input.repeat === 'custom') throw new Error('A new event can’t keep a custom repeat');
   const recurrenceRule = input.repeat ? RECURRENCE_RULES[input.repeat] : null;
   const id = randomUUID();
@@ -73,8 +91,8 @@ export function createEvent(db: Database.Database, input: EventInput, now = new 
         recurrenceRule, googleEventId, googleEtag, syncState, createdAt, updatedAt, deletedAt)
      VALUES
        (@id, @title, @description, @startAt, @endAt, @allDay, @kind, NULL, @reminderMinutes,
-        @recurrenceRule, NULL, NULL, 'local', @timestamp, @timestamp, NULL)`
-  ).run({ id, ...inputToColumns(input, recurrenceRule), timestamp });
+        @recurrenceRule, NULL, NULL, @syncState, @timestamp, @timestamp, NULL)`
+  ).run({ id, ...inputToColumns(input, recurrenceRule), syncState: stateAfterChange(syncEnabled, null), timestamp });
   return getEvent(db, id);
 }
 
@@ -86,7 +104,8 @@ export function updateEvent(
   db: Database.Database,
   id: string,
   input: EventInput,
-  now = new Date()
+  now = new Date(),
+  syncEnabled = false
 ): CalendarEvent {
   const existing = getEvent(db, id);
   let recurrenceRule: string | null;
@@ -102,17 +121,30 @@ export function updateEvent(
     `UPDATE events
      SET title = @title, description = @description, startAt = @startAt, endAt = @endAt,
          allDay = @allDay, kind = @kind, reminderMinutes = @reminderMinutes,
-         recurrenceRule = @recurrenceRule, updatedAt = @timestamp
+         recurrenceRule = @recurrenceRule, updatedAt = @timestamp,
+         syncState = @syncState, syncError = NULL, changeSeq = changeSeq + 1
      WHERE id = @id`
-  ).run({ id, ...inputToColumns(input, recurrenceRule), timestamp: now.toISOString() });
+  ).run({
+    id,
+    ...inputToColumns(input, recurrenceRule),
+    syncState: stateAfterChange(syncEnabled, existing.googleEventId),
+    timestamp: now.toISOString(),
+  });
   return getEvent(db, id);
 }
 
-/** Soft delete. Repeating events: the whole series. Completions stay in the table but are hidden. */
-export function deleteEvent(db: Database.Database, id: string, now = new Date()): void {
-  getEvent(db, id);
+/**
+ * Soft delete. Repeating events: the whole series. Completions stay in the table but are hidden.
+ * The row is kept either way; when it's 'pending', the push queue deletes it in Google and then
+ * marks it 'synced' (still deleted here).
+ */
+export function deleteEvent(db: Database.Database, id: string, now = new Date(), syncEnabled = false): void {
+  const existing = getEvent(db, id);
   const timestamp = now.toISOString();
-  db.prepare('UPDATE events SET deletedAt = ?, updatedAt = ? WHERE id = ?').run(timestamp, timestamp, id);
+  db.prepare(
+    `UPDATE events SET deletedAt = ?, updatedAt = ?, syncState = ?, syncError = NULL, changeSeq = changeSeq + 1
+     WHERE id = ?`
+  ).run(timestamp, timestamp, stateAfterChange(syncEnabled, existing.googleEventId), id);
 }
 
 /**
